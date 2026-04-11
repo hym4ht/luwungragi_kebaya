@@ -1,270 +1,202 @@
 <x-layouts.app title="Pesanan Saya">
 <style>
+    /* Reset & Variabel */
     :root {
+        --bg-body: #f8f9fa;
+        --bg-card: #ffffff;
+        --text-main: #111827;
+        --text-muted: #6b7280;
         --brand-maroon: #580d21;
-        --bg-cream: #FDFBF7;
-        --text-dark: #2c2c2c;
-        --text-muted: #79665e;
-    }
-    body { background-color: var(--bg-cream) !important; font-family: 'Montserrat', sans-serif; }
-
-    .orders-wrap { padding: 3rem 0; }
-
-    .page-heading {
-        font-family: 'Playfair Display', serif;
-        font-size: 2rem;
-        color: var(--brand-maroon);
-        margin-bottom: 0.25rem;
-    }
-    .page-sub {
-        font-size: 0.7rem;
-        color: var(--text-muted);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin-bottom: 2.5rem;
+        --border-soft: #f1f1f1;
     }
 
-    /* Stats bar */
-    .stats-bar {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
-        margin-bottom: 2.5rem;
-    }
-    @media(max-width:768px){ .stats-bar { grid-template-columns: repeat(2,1fr); } }
-    .stat-tile {
-        background: white;
-        border: 1px solid rgba(88,13,33,0.08);
-        padding: 1.25rem;
-        text-align: center;
-    }
-    .stat-tile-value {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.75rem;
-        color: var(--brand-maroon);
-        line-height: 1;
-        margin-bottom: 0.35rem;
-    }
-    .stat-tile-label {
-        font-size: 0.6rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--text-muted);
+    /* Memastikan body tidak tembus pandang */
+    body { 
+        background-color: var(--bg-body) !important; 
+        font-family: 'Inter', system-ui, sans-serif;
     }
 
-    /* Order cards */
-    .order-card {
-        background: white;
-        border: 1px solid rgba(88,13,33,0.08);
-        margin-bottom: 1rem;
+    .orders-wrapper {
+        padding: 2rem 1rem;
+        min-height: 100vh;
+    }
+
+    /* Main White Sheet */
+    .orders-card {
+        background: var(--bg-card);
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        max-width: 900px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .inner-content {
         padding: 1.5rem;
+    }
+    @media (min-width: 768px) {
+        .inner-content { padding: 3rem; }
+    }
+
+    /* Header */
+    .header-section { margin-bottom: 2.5rem; }
+    .title-text { 
+        font-size: 1.75rem; 
+        font-weight: 800; 
+        color: var(--text-main);
+        letter-spacing: -0.03em;
+        margin-bottom: 0.5rem;
+    }
+    .user-greet { font-size: 0.95rem; color: var(--text-muted); }
+
+    /* Stats Grid */
+    .stats-grid {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
-        align-items: start;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        margin-bottom: 3rem;
     }
-    .order-card:hover {
-        border-color: rgba(88,13,33,0.25);
-        box-shadow: 0 4px 20px rgba(88,13,33,0.06);
+    @media (min-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 2rem; }
     }
-    .order-invoice {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        margin-bottom: 0.5rem;
+
+    .stat-node {
+        padding: 1rem;
+        background: #fafafa;
+        border-radius: 8px;
     }
-    .order-costumes {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 0.5rem;
-    }
-    .order-meta {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-        display: flex;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-    }
-    .order-meta-item { display: flex; align-items: center; gap: 0.35rem; }
-    .order-actions {
+    .stat-label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; display: block; }
+    .stat-val { font-size: 1.1rem; font-weight: 700; color: var(--brand-maroon); }
+
+    /* List Item */
+    .order-row {
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
-        gap: 0.75rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border-soft);
+        gap: 1rem;
     }
-    .order-total {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.1rem;
-        color: var(--text-dark);
-        font-weight: 700;
-        white-space: nowrap;
+    @media (min-width: 640px) {
+        .order-row { flex-direction: row; align-items: center; justify-content: space-between; }
+    }
+    .order-row:last-child { border-bottom: none; }
+
+    .info-box { flex: 1; }
+    .inv-no { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+    .costume-list { 
+        display: block; 
+        font-size: 1.05rem; 
+        font-weight: 600; 
+        color: var(--text-main);
+        margin: 0.25rem 0 0.75rem 0;
     }
 
-    /* Status chips */
-    .chip {
-        display: inline-block;
-        font-size: 0.58rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 0.28rem 0.7rem;
+    .pill-group { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .pill { 
+        font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem; 
+        border-radius: 6px; background: #f3f4f6; color: #4b5563; 
     }
-    .chip-pending    { background: #fef3c7; color: #92400e; }
-    .chip-active     { background: #dbeafe; color: #1e40af; }
-    .chip-completed  { background: #f0fdf4; color: #166534; }
-    .chip-cancelled  { background: #fee2e2; color: #991b1b; }
-    .chip-settlement { background: #d1fae5; color: #065f46; }
-    .chip-expire, .chip-cancel { background: #fee2e2; color: #991b1b; }
+    
+    /* Specific status colors */
+    .pill-pending { background: #fffbeb; color: #b45309; }
+    .pill-active { background: #eff6ff; color: #1d4ed8; }
+    .pill-completed { background: #f0fdf4; color: #15803d; }
 
-    .btn-view-order {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--brand-maroon);
+    .price-action { text-align: left; }
+    @media (min-width: 640px) { .price-action { text-align: right; } }
+
+    .total-price { font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: block; margin-bottom: 0.75rem; }
+    
+    .btn-outline {
         text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--brand-maroon);
         border: 1.5px solid var(--brand-maroon);
-        padding: 0.45rem 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
         transition: all 0.2s;
-        white-space: nowrap;
     }
-    .btn-view-order:hover {
+    .btn-outline:hover { background: var(--brand-maroon); color: white; }
+
+    .btn-primary {
         background: var(--brand-maroon);
         color: white;
+        padding: 0.55rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-right: 0.5rem;
     }
 
-    .btn-pay-chip {
-        font-size: 0.6rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        background: var(--brand-maroon);
-        color: white;
-        padding: 0.35rem 0.8rem;
-        text-decoration: none;
-        transition: background 0.2s;
-        white-space: nowrap;
-    }
-    .btn-pay-chip:hover { background: #3f0917; color: white; }
-
-    .empty-state {
-        text-align: center;
-        padding: 5rem 2rem;
-        color: var(--text-muted);
-    }
-    .empty-state .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.4;
-    }
-    .empty-state h3 {
-        font-family: 'Playfair Display', serif;
-        color: var(--brand-maroon);
-        margin-bottom: 0.5rem;
-    }
-    .empty-state p { font-size: 0.85rem; margin-bottom: 1.5rem; }
-    .btn-browse {
-        display: inline-block;
-        background: var(--brand-maroon);
-        color: white;
-        padding: 0.75rem 2rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        text-decoration: none;
-        transition: background 0.2s;
-    }
-    .btn-browse:hover { background: #3f0917; color: white; }
+    .empty-msg { text-align: center; padding: 4rem 0; color: var(--text-muted); }
 </style>
 
-<div class="orders-wrap">
-    <div class="container" style="max-width: 900px;">
-        <h1 class="page-heading">Pesanan Saya</h1>
-        <p class="page-sub">Halo, {{ auth()->user()->name }} · Riwayat & status sewa busana Anda</p>
+<div class="orders-wrapper">
+    <div class="orders-card">
+        <div class="inner-content">
+            
+            <header class="header-section">
+                <h1 class="title-text">Pesanan Saya</h1>
+                <p class="user-greet">Halo {{ explode(' ', auth()->user()->name)[0] }}, kelola jadwal sewa busana Anda di sini.</p>
+            </header>
 
-        {{-- Stats bar --}}
-        <div class="stats-bar">
-            <div class="stat-tile">
-                <div class="stat-tile-value">{{ $summary['pending'] }}</div>
-                <div class="stat-tile-label">Menunggu</div>
+            <div class="stats-grid">
+                <div class="stat-node">
+                    <span class="stat-label">Menunggu</span>
+                    <span class="stat-val">{{ $summary['pending'] }}</span>
+                </div>
+                <div class="stat-node">
+                    <span class="stat-label">Aktif</span>
+                    <span class="stat-val">{{ $summary['active'] }}</span>
+                </div>
+                <div class="stat-node">
+                    <span class="stat-label">Selesai</span>
+                    <span class="stat-val">{{ $summary['completed'] }}</span>
+                </div>
+                <div class="stat-node">
+                    <span class="stat-label">Total Dibayar</span>
+                    <span class="stat-val">Rp{{ number_format($summary['total_spent'], 0, ',', '.') }}</span>
+                </div>
             </div>
-            <div class="stat-tile">
-                <div class="stat-tile-value">{{ $summary['active'] }}</div>
-                <div class="stat-tile-label">Aktif</div>
-            </div>
-            <div class="stat-tile">
-                <div class="stat-tile-value">{{ $summary['completed'] }}</div>
-                <div class="stat-tile-label">Selesai</div>
-            </div>
-            <div class="stat-tile">
-                <div class="stat-tile-value">{{ 'Rp'.number_format($summary['total_spent'], 0, ',', '.') }}</div>
-                <div class="stat-tile-label">Total Dibayar</div>
-            </div>
-        </div>
 
-        {{-- Orders List --}}
-        @if($rentals->isEmpty())
-            <div class="empty-state">
-                <div class="empty-icon">🎭</div>
-                <h3>Belum Ada Pesanan</h3>
-                <p>Jelajahi koleksi busana kami dan buat pesanan pertama Anda.</p>
-                <a href="{{ route('home') }}#catalog" class="btn-browse">JELAJAHI CATALOG →</a>
-            </div>
-        @else
-            @foreach($rentals as $rental)
-                <div class="order-card">
-                    <div>
-                        <div class="order-invoice">
-                            {{ $rental->invoice_number }} ·
-                            {{ $rental->created_at->format('d M Y') }}
-                        </div>
-                        <div class="order-costumes">
-                            @foreach($rental->details as $detail)
-                                {{ $detail->costume->name }}{{ !$loop->last ? ', ' : '' }}
-                            @endforeach
-                        </div>
-                        <div class="order-meta">
-                            <span class="order-meta-item">
-                                📅 Sewa {{ $rental->usage_date->format('d M Y') }}@if($rental->rental_duration_days > 1)-{{ $rental->usage_end_date->format('d M Y') }}@endif · Kembali {{ $rental->return_due_date->format('d M Y') }}
-                            </span>
-                            <span class="order-meta-item">
-                                🎭 Status:
-                                <span class="chip chip-{{ strtolower($rental->status->value) }}">
+            <div class="order-list">
+                @forelse($rentals as $rental)
+                    <div class="order-row">
+                        <div class="info-box">
+                            <span class="inv-no">#{{ $rental->invoice_number }} &bull; {{ $rental->created_at->format('d M Y') }}</span>
+                            <span class="costume-list">{{ $rental->details->pluck('costume.name')->implode(', ') }}</span>
+                            <div class="pill-group">
+                                <span class="pill pill-{{ strtolower($rental->status->value) }}">
                                     {{ $rental->status->label() }}
                                 </span>
-                            </span>
-                            @if($rental->payment)
-                                <span class="order-meta-item">
-                                    💳 Bayar:
-                                    <span class="chip chip-{{ $rental->payment->status->value }}">
-                                        {{ $rental->payment->status->label() }}
-                                    </span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted)">
+                                    📅 {{ $rental->usage_date->format('d M') }} — {{ $rental->return_due_date->format('d M') }}
                                 </span>
-                            @endif
+                            </div>
+                        </div>
+
+                        <div class="price-action">
+                            <span class="total-price">Rp{{ number_format((float) $rental->total_price, 0, ',', '.') }}</span>
+                            <div style="display: flex; align-items: center; justify-content: inherit;">
+                                @if($rental->payment?->status?->value === 'pending')
+                                    <a href="{{ route('customer.rentals.show', $rental) }}" class="btn-primary">Bayar</a>
+                                @endif
+                                <a href="{{ route('customer.rentals.show', $rental) }}" class="btn-outline">Detail →</a>
+                            </div>
                         </div>
                     </div>
-                    <div class="order-actions">
-                        <div class="order-total">
-                            Rp{{ number_format((float) $rental->total_price, 0, ',', '.') }}
-                        </div>
-                        @if($rental->payment?->status?->value === 'pending')
-                            <a href="{{ route('customer.rentals.show', $rental) }}" class="btn-pay-chip">
-                                💳 BAYAR SEKARANG
-                            </a>
-                        @endif
-                        <a href="{{ route('customer.rentals.show', $rental) }}" class="btn-view-order">
-                            LIHAT DETAIL →
-                        </a>
+                @empty
+                    <div class="empty-msg">
+                        <p>Belum ada riwayat pemesanan.</p>
+                        <a href="{{ route('home') }}" style="color: var(--brand-maroon); font-weight: 600;">Cari Busana →</a>
                     </div>
-                </div>
-            @endforeach
-        @endif
+                @endforelse
+            </div>
+
+        </div>
     </div>
 </div>
 </x-layouts.app>
