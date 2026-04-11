@@ -10,6 +10,8 @@ use App\Http\Controllers\Customer\RentalController as CustomerRentalController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
+use App\Http\Controllers\Owner\ReportController as OwnerReportController;
+use App\Http\Controllers\Owner\ProfileController as OwnerProfileController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +32,10 @@ Route::middleware('jwt.guest')->group(function (): void {
 Route::middleware('jwt.auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
 
     Route::prefix('customer')->name('customer.')->middleware('role:customer')->group(function (): void {
         Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders');
@@ -64,6 +70,15 @@ Route::middleware('jwt.auth')->group(function (): void {
 
     Route::prefix('owner')->name('owner.')->middleware('role:owner')->group(function (): void {
         Route::get('/dashboard', [OwnerDashboardController::class, 'index'])->name('dashboard');
+
+        // Owner Reports
+        Route::get('/reports/financial', [OwnerReportController::class, 'financial'])->name('reports.financial');
+        Route::get('/reports/transactions', [OwnerReportController::class, 'transactions'])->name('reports.transactions');
+        Route::get('/reports/top-items', [OwnerReportController::class, 'topItems'])->name('reports.top-items');
+        Route::get('/reports/returns', [OwnerReportController::class, 'returns'])->name('reports.returns');
+
+        // Owner Profile
+        Route::get('/profile', [OwnerProfileController::class, 'index'])->name('profile');
     });
 
     Route::get('/reports', [ReportController::class, 'index'])

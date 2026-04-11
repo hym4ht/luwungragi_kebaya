@@ -20,7 +20,6 @@ class HomeController extends Controller
 
     public function index(Request $request): mixed
     {
-        $perPage = 6;
         $legacyRentalDate = $request->date('rental_date')?->toDateString();
         $defaultEventDate = now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString();
 
@@ -31,8 +30,6 @@ class HomeController extends Controller
                 ?: ($legacyRentalDate ? Carbon::parse($legacyRentalDate)->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString() : $defaultEventDate),
         ];
 
-        $currentPage = max(1, $request->integer('page', 1));
-
         $allCatalog = $this->availabilityService->getCatalog(
             $filters['event_date'],
             $filters['search'],
@@ -40,16 +37,13 @@ class HomeController extends Controller
         );
 
         $totalItems = $allCatalog->count();
-        $totalPages = max(1, (int) ceil($totalItems / $perPage));
-        $currentPage = min($currentPage, $totalPages);
 
         $partialData = [
-            'catalog'     => $allCatalog->forPage($currentPage, $perPage),
+            'catalog'     => $allCatalog,
             'fullCatalog' => $allCatalog,
             'totalItems'  => $totalItems,
-            'totalPages'  => $totalPages,
-            'currentPage' => $currentPage,
-            'perPage'     => $perPage,
+            'totalPages'  => 1,
+            'currentPage' => 1,
             'filters'     => $filters,
         ];
 

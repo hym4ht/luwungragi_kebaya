@@ -24,7 +24,7 @@
                 $imgSrc      = asset("images/kebaya{$imgIndex}.png");
                 $placeholder = 'https://placehold.co/400x500/f0ece1/580d21?text=' . urlencode($costume->category);
             @endphp
-            <div class="col-sm-6 col-lg-4">
+          <div class="col-sm-6 col-lg" style="flex: 0 0 20%; max-width: 20%;">
                 <div class="product-card">
                     <div class="product-img-wrapper">
                         <span class="product-badge {{ $isAvail ? 'badge-available' : 'badge-rented' }}">
@@ -115,49 +115,5 @@
         <a href="#" class="js-clear-filters btn-primary-custom mt-3 d-inline-block">
             LIHAT SEMUA
         </a>
-    </div>
-@endif
-
-{{-- Pagination --}}
-@if($totalPages > 1)
-    <div class="catalog-pagination">
-        @if($currentPage > 1)
-            <a href="#" class="page-btn js-page-link" data-page="{{ $currentPage - 1 }}" aria-label="Halaman sebelumnya">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                </svg>
-            </a>
-        @endif
-
-        @php
-            $start = max(1, $currentPage - 2);
-            $end   = min($totalPages, $currentPage + 2);
-        @endphp
-
-        @if($start > 1)
-            <a href="#" class="page-btn js-page-link" data-page="1">1</a>
-            @if($start > 2)<span class="page-btn" style="border:none;cursor:default;">…</span>@endif
-        @endif
-
-        @for($p = $start; $p <= $end; $p++)
-            <a href="#" class="page-btn js-page-link {{ $p === $currentPage ? 'active' : '' }}" data-page="{{ $p }}">
-                {{ $p }}
-            </a>
-        @endfor
-
-        @if($end < $totalPages)
-            @if($end < $totalPages - 1)
-                <span class="page-btn" style="border:none;cursor:default;">…</span>
-            @endif
-            <a href="#" class="page-btn js-page-link" data-page="{{ $totalPages }}">{{ $totalPages }}</a>
-        @endif
-
-        @if($currentPage < $totalPages)
-            <a href="#" class="page-btn js-page-link" data-page="{{ $currentPage + 1 }}" aria-label="Halaman berikutnya">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-                </svg>
-            </a>
-        @endif
     </div>
 @endif

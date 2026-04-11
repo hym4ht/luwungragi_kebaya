@@ -1,85 +1,133 @@
 <x-layouts.app title="Daftar">
-    <section class="auth-register-simple">
-        <div class="row justify-content-center">
-            <div class="col-xl-5 col-lg-6 col-md-8">
-                <div class="auth-panel auth-register-simple__panel">
-                    <p class="eyebrow mb-2">Akun Penyewa</p>
-                    <h1 class="display-title mb-3">Daftar untuk mulai booking</h1>
-                    <p class="auth-register-simple__copy mb-4">
-                        Setelah mendaftar, Anda langsung menerima sesi aktif dan bisa memesan busana yang tersedia dengan tampilan yang selaras dengan nuansa landing page.
-                    </p>
+    <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-xl-4 col-lg-5 col-md-7 col-sm-10">
 
-                    <form action="{{ route('auth.register.store') }}" method="POST" class="row g-3">
-                        @csrf
-                        <div class="col-12">
-                            <label class="form-label auth-register-simple__label">Nama Lengkap</label>
-                            <input
-                                type="text"
-                                name="name"
-                                class="form-control auth-register-simple__input @error('name') is-invalid @enderror"
-                                value="{{ old('name') }}"
-                                placeholder="Masukkan nama lengkap Anda"
-                                autocomplete="name"
-                                required
-                            >
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+            {{-- Card Panel --}}
+            <div class="bg-white rounded-4 shadow-sm p-4 p-md-5">
+
+                        {{-- Header --}}
+                        <div class="text-center mb-4">
+                            <span class="badge rounded-pill px-3 py-2 mb-3"
+                                style="background-color: #f5e6ea; color: #7a1230; font-size: 0.75rem; letter-spacing: 0.05em;">
+                                AKUN PENYEWA
+                            </span>
+                            <h1 class="fw-bold mb-2" style="font-size: 1.6rem; color: #1a1a1a;">
+                                Daftar untuk mulai booking
+                            </h1>
+                            <p class="text-muted" style="font-size: 0.875rem; line-height: 1.6;">
+                                Setelah mendaftar, Anda langsung menerima sesi aktif dan bisa memesan busana yang tersedia.
+                            </p>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label auth-register-simple__label">Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                class="form-control auth-register-simple__input @error('email') is-invalid @enderror"
-                                value="{{ old('email') }}"
-                                placeholder="nama@email.com"
-                                autocomplete="email"
-                                required
-                            >
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        {{-- Form --}}
+                        <form action="{{ route('auth.register.store') }}" method="POST">
+                            @csrf
 
-                        <div class="col-md-6">
-                            <label class="form-label auth-register-simple__label">Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                class="form-control auth-register-simple__input @error('password') is-invalid @enderror"
-                                placeholder="Minimal 8 karakter"
-                                autocomplete="new-password"
-                                required
-                            >
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            {{-- Nama Lengkap --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark" style="font-size: 0.85rem;">
+                                    Nama Lengkap
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    class="form-control rounded-3 @error('name') is-invalid @enderror"
+                                    value="{{ old('name') }}"
+                                    placeholder="Masukkan nama lengkap Anda"
+                                    autocomplete="name"
+                                    required
+                                    style="padding: 0.65rem 1rem; border-color: #e0e0e0; font-size: 0.9rem;"
+                                >
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label auth-register-simple__label">Konfirmasi Password</label>
-                            <input
-                                type="password"
-                                name="password_confirmation"
-                                class="form-control auth-register-simple__input"
-                                placeholder="Ulangi password"
-                                autocomplete="new-password"
-                                required
-                            >
-                        </div>
+                            {{-- Email --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark" style="font-size: 0.85rem;">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    class="form-control rounded-3 @error('email') is-invalid @enderror"
+                                    value="{{ old('email') }}"
+                                    placeholder="nama@email.com"
+                                    autocomplete="email"
+                                    required
+                                    style="padding: 0.65rem 1rem; border-color: #e0e0e0; font-size: 0.9rem;"
+                                >
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <div class="col-12 d-grid pt-2">
-                            <button type="submit" class="btn btn-home-primary auth-register-simple__submit">Buat Akun</button>
-                        </div>
-                    </form>
+                            {{-- Password Row --}}
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-dark" style="font-size: 0.85rem;">
+                                        Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        class="form-control rounded-3 @error('password') is-invalid @enderror"
+                                        placeholder="Min. 8 karakter"
+                                        autocomplete="new-password"
+                                        required
+                                        style="padding: 0.65rem 1rem; border-color: #e0e0e0; font-size: 0.9rem;"
+                                    >
+                                    @error('password')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-dark" style="font-size: 0.85rem;">
+                                        Konfirmasi Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="password_confirmation"
+                                        class="form-control rounded-3"
+                                        placeholder="Ulangi password"
+                                        autocomplete="new-password"
+                                        required
+                                        style="padding: 0.65rem 1rem; border-color: #e0e0e0; font-size: 0.9rem;"
+                                    >
+                                </div>
+                            </div>
 
-                    <div class="auth-register-simple__footer mt-4">
-                        Sudah punya akun? <a href="{{ route('auth.login') }}" class="auth-register-simple__link">Login di sini</a>
+                            {{-- Submit Button --}}
+                            <div class="d-grid">
+                                <button
+                                    type="submit"
+                                    class="btn fw-semibold rounded-3 py-2"
+                                    style="background-color: #7a1230; color: #fff; font-size: 0.95rem; letter-spacing: 0.02em; transition: opacity 0.2s;"
+                                    onmouseover="this.style.opacity='0.88'"
+                                    onmouseout="this.style.opacity='1'"
+                                >
+                                    Buat Akun
+                                </button>
+                            </div>
+                        </form>
+
+                        {{-- Divider --}}
+                        <hr class="my-4" style="border-color: #f0f0f0;">
+
+                        {{-- Footer --}}
+                        <p class="text-center text-muted mb-0" style="font-size: 0.875rem;">
+                            Sudah punya akun?
+                            <a href="{{ route('auth.login') }}"
+                               class="fw-semibold text-decoration-none"
+                               style="color: #7a1230;">
+                                Login di sini
+                            </a>
+                        </p>
+
                     </div>
-                </div>
             </div>
-        </div>    
-    </section>
+            {{-- End Card --}}
+        </div>
+    </div>
 </x-layouts.app>

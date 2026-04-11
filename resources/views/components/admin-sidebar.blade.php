@@ -4,19 +4,33 @@
 @endphp
 
 <style>
-    .admin-sidebar {
-        width: 280px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        background-color: var(--bg-cream, #FDFBF7);
-        display: flex;
-        flex-direction: column;
-        padding: 2.5rem 1.5rem;
-        z-index: 1000;
-        overflow-y: auto;
+    @media (min-width: 992px) {
+        .admin-sidebar {
+            width: 280px !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: var(--bg-cream, #FDFBF7) !important;
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem 1.5rem;
+            z-index: 1000;
+            overflow-y: auto;
+            border-right: none !important;
+        }
     }
+    
+    @media (max-width: 991.98px) {
+        .admin-sidebar {
+            width: 280px !important;
+            background-color: var(--bg-cream, #FDFBF7) !important;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
     .admin-sidebar::-webkit-scrollbar {
         width: 6px;
     }
@@ -98,11 +112,19 @@
     }
 </style>
 
-<div class="admin-sidebar">
-    <a href="{{ $userRole === 'admin' ? route('admin.dashboard') : route('owner.dashboard') }}" class="admin-brand">Luwungragi</a>
-    <div class="admin-brand-subtitle">{{ $userRole === 'admin' ? 'Panel Manajemen' : 'Portal Pemilik' }}</div>
+<div class="offcanvas-lg offcanvas-start admin-sidebar" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+    <div class="d-lg-none d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="admin-brand mb-0" style="display: block !important;">Luwungragi</div>
+            <div class="admin-brand-subtitle mb-0" style="display: block !important;">{{ $userRole === 'admin' ? 'Panel Manajemen' : 'Portal Pemilik' }}</div>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close"></button>
+    </div>
 
-    <nav class="d-flex flex-column mb-4">
+    <a href="{{ $userRole === 'admin' ? route('admin.dashboard') : route('owner.dashboard') }}" class="admin-brand d-none d-lg-block">Luwungragi</a>
+    <div class="admin-brand-subtitle d-none d-lg-block">{{ $userRole === 'admin' ? 'Panel Manajemen' : 'Portal Pemilik' }}</div>
+
+    <nav class="d-flex flex-column mb-4 flex-grow-1">
         @if ($userRole === 'admin')
             <!-- ADMIN MENU -->
             <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ $currentRoute === 'admin.dashboard' ? 'active' : '' }}">
@@ -160,8 +182,8 @@
     </nav>
 
     <div class="sidebar-footer border-top border-2" style="border-color: rgba(0,0,0,0.03) !important;">
-        <a href="#" class="admin-nav-link" style="margin-bottom: 0.25rem;">
-            <i class="bi bi-gear"></i>
+        <a href="{{ route('profile.index') }}" class="admin-nav-link {{ $currentRoute === 'profile.index' ? 'active' : '' }}" style="margin-bottom: 0.25rem;">
+            <i class="bi bi-gear{{ $currentRoute === 'profile.index' ? '-fill' : '' }}"></i>
             Pengaturan
         </a>
         <form action="{{ route('auth.logout') }}" method="POST">
