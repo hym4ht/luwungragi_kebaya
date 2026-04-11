@@ -148,6 +148,33 @@
         .catalog-header {
             margin-bottom: 4rem;
         }
+        .catalog-desktop-stage {
+            position: relative;
+        }
+        .catalog-desktop-shell {
+            position: relative;
+        }
+        .catalog-workspace {
+            row-gap: 2rem;
+        }
+        .catalog-sidebar-column,
+        .catalog-results-column {
+            min-height: 0;
+        }
+        .catalog-sidebar__form {
+            width: 100%;
+        }
+        .catalog-sidebar__filters {
+            width: 100%;
+        }
+        .catalog-results-column {
+            display: flex;
+        }
+        .catalog-results-panel {
+            width: 100%;
+            transition: opacity 0.25s ease;
+            min-height: 300px;
+        }
         .catalog-title {
             font-family: 'Playfair Display', serif;
             font-size: 2.5rem;
@@ -310,7 +337,8 @@
         .product-card {
             background: transparent;
             border: none;
-            margin-bottom: 2rem;
+            margin-bottom: 0;
+            height: 100%;
         }
         .product-img-wrapper {
             position: relative;
@@ -370,6 +398,7 @@
             justify-content: center;
             gap: 0.5rem;
             margin-top: 3rem;
+            flex-wrap: wrap;
         }
         .page-btn {
             width: 40px;
@@ -392,6 +421,50 @@
             background-color: var(--brand-maroon);
             color: white;
             border-color: var(--brand-maroon);
+        }
+        .catalog-results__count {
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+        .catalog-results__clear {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .catalog-results__clear:hover {
+            color: var(--brand-maroon);
+        }
+        .catalog-grid--mobile {
+            display: none;
+        }
+        .catalog-mobile__grid .is-hidden {
+            display: none;
+        }
+        .catalog-mobile__footer {
+            display: flex;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .catalog-mobile__viewmore {
+            border: 1px solid var(--brand-maroon);
+            background-color: transparent;
+            color: var(--brand-maroon);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            padding: 0.9rem 1.5rem;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+        .catalog-mobile__viewmore:hover,
+        .catalog-mobile__viewmore:focus-visible,
+        .catalog-mobile__viewmore:active {
+            background-color: #3f0917;
+            border-color: #3f0917;
+            color: white;
         }
         .form-control-date {
             width: 100%;
@@ -481,6 +554,95 @@
             background-color: #3f0917;
             color: white;
         }
+        @media (min-width: 992px) {
+            .catalog-section {
+                padding: 4.5rem 0 6rem;
+            }
+            .catalog-desktop-shell {
+                position: sticky;
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .catalog-header {
+                margin-bottom: 0;
+                flex: 0 0 auto;
+            }
+            .catalog-workspace {
+                flex: 1 1 auto;
+                min-height: 0;
+                align-items: stretch;
+            }
+            .catalog-sidebar-column,
+            .catalog-results-column {
+                height: 100%;
+            }
+            .catalog-sidebar__form {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 2rem;
+                height: 100%;
+            }
+            .catalog-sidebar__filters {
+                flex: 1 1 auto;
+            }
+            .catalog-results-panel {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: hidden;
+                padding-right: 0.75rem;
+            }
+        }
+        @media (max-width: 991.98px) {
+            .catalog-header {
+                margin-bottom: 2.5rem;
+            }
+            .catalog-subtitle br {
+                display: none;
+            }
+        }
+        @media (max-width: 767.98px) {
+            .catalog-section {
+                padding: 4.5rem 0;
+            }
+            .catalog-title {
+                font-size: 2rem;
+            }
+            .catalog-subtitle {
+                font-size: 0.92rem;
+            }
+            .catalog-results__meta {
+                gap: 0.75rem;
+                align-items: flex-start !important;
+                flex-wrap: wrap;
+            }
+            .catalog-results__count {
+                font-size: 0.68rem;
+                line-height: 1.5;
+            }
+            .catalog-results__clear {
+                font-size: 0.62rem;
+                letter-spacing: 0.08em;
+            }
+            .catalog-grid--desktop,
+            .catalog-pagination {
+                display: none;
+            }
+            .catalog-grid--mobile {
+                display: block;
+            }
+            .catalog-mobile__grid {
+                --bs-gutter-x: 1.5rem;
+                --bs-gutter-y: 1.5rem;
+            }
+            .catalog-mobile__viewmore {
+                width: 100%;
+            }
+            .product-card {
+                margin-bottom: 0.25rem;
+            }
+        }
     </style>
 </head>
 <body data-bs-spy="scroll" data-bs-target="#appNavbar" data-bs-offset="100">
@@ -538,68 +700,74 @@
 
     <section id="catalog" class="catalog-section">
         <div class="container px-4 px-lg-5">
-            <!-- Header -->
-            <div class="row catalog-header align-items-end">
-                <div class="col-lg-7 mb-4 mb-lg-0">
-                    <h2 class="catalog-title">The Heritage Collection</h2>
-                    <p class="catalog-subtitle mb-0">
-                        Explore our curated archive of artisanal costumes, where every<br>thread weaves a story of tradition and timeless elegance.
-                    </p>
-                </div>
-                <div class="col-lg-5">
-                    <form method="GET" action="{{ url()->current() }}#catalog">
-                        <input type="hidden" name="category" value="{{ $filters['category'] }}">
-                        <input type="hidden" name="event_date" value="{{ $filters['event_date'] }}">
-                        <div class="search-input-container">
-                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                            </svg>
-                            <input type="text" name="search" class="search-input"
-                                   placeholder="Cari nama kostum..."
-                                   value="{{ $filters['search'] }}"
-                                   autocomplete="off">
+            <div class="catalog-desktop-stage js-catalog-desktop-stage">
+                <div class="catalog-desktop-shell js-catalog-desktop-shell">
+                    <!-- Header -->
+                    <div class="row catalog-header align-items-end">
+                        <div class="col-lg-7 mb-4 mb-lg-0">
+                            <h2 class="catalog-title">The Heritage Collection</h2>
+                            <p class="catalog-subtitle mb-0">
+                                Explore our curated archive of artisanal costumes, where every<br>thread weaves a story of tradition and timeless elegance.
+                            </p>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Sidebar Filters -->
-                <div class="col-lg-3 pe-lg-5 mb-5 mb-lg-0">
-                    <form method="GET" action="{{ url()->current() }}#catalog">
-                        <input type="hidden" name="search" value="{{ $filters['search'] }}">
-
-                        <div class="mb-5">
-                            <span class="filter-label">KATEGORI</span>
-                            <div class="filter-checkbox">
-                                <input type="radio" name="category" id="cat-all" value=""
-                                       {{ empty($filters['category']) ? 'checked' : '' }}>
-                                <label for="cat-all">Semua Kategori</label>
-                            </div>
-                            @foreach ($categories as $cat)
-                                <div class="filter-checkbox">
-                                    <input type="radio" name="category" id="cat-{{ Str::slug($cat) }}" value="{{ $cat }}"
-                                           {{ $filters['category'] === $cat ? 'checked' : '' }}>
-                                    <label for="cat-{{ Str::slug($cat) }}">{{ $cat }}</label>
+                        <div class="col-lg-5">
+                            <form method="GET" action="{{ url()->current() }}#catalog">
+                                <input type="hidden" name="category" value="{{ $filters['category'] }}">
+                                <input type="hidden" name="event_date" value="{{ $filters['event_date'] }}">
+                                <div class="search-input-container">
+                                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                    </svg>
+                                    <input type="text" name="search" class="search-input"
+                                           placeholder="Cari nama kostum..."
+                                           value="{{ $filters['search'] }}"
+                                           autocomplete="off">
                                 </div>
-                            @endforeach
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="row catalog-workspace">
+                        <!-- Sidebar Filters -->
+                        <div class="col-lg-3 pe-lg-5 mb-5 mb-lg-0 catalog-sidebar-column">
+                            <form method="GET" action="{{ url()->current() }}#catalog" class="catalog-sidebar__form">
+                                <input type="hidden" name="search" value="{{ $filters['search'] }}">
+
+                                <div class="catalog-sidebar__filters">
+                                    <div class="mb-5">
+                                        <span class="filter-label">KATEGORI</span>
+                                        <div class="filter-checkbox">
+                                            <input type="radio" name="category" id="cat-all" value=""
+                                                   {{ empty($filters['category']) ? 'checked' : '' }}>
+                                            <label for="cat-all">Semua Kategori</label>
+                                        </div>
+                                        @foreach ($categories as $cat)
+                                            <div class="filter-checkbox">
+                                                <input type="radio" name="category" id="cat-{{ Str::slug($cat) }}" value="{{ $cat }}"
+                                                       {{ $filters['category'] === $cat ? 'checked' : '' }}>
+                                                <label for="cat-{{ Str::slug($cat) }}">{{ $cat }}</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="mb-5">
+                                        <span class="filter-label">TANGGAL ACARA</span>
+                                        <input type="date" name="event_date" class="form-control-date"
+                                               value="{{ $filters['event_date'] }}"
+                                               min="{{ now()->addDays(\App\Models\Rental::BOOKING_BUFFER_DAYS)->toDateString() }}">
+                                    </div>
+                                </div>
+
+                                <a href="{{ url()->current() }}#catalog" class="clear-filters">RESET FILTER</a>
+                            </form>
                         </div>
 
-                        <div class="mb-5">
-                            <span class="filter-label">TANGGAL ACARA</span>
-                            <input type="date" name="event_date" class="form-control-date"
-                                   value="{{ $filters['event_date'] }}"
-                                   min="{{ now()->addDays(\App\Models\Rental::BOOKING_BUFFER_DAYS)->toDateString() }}">
+                        <!-- Product Grid -->
+                        <div class="col-lg-9 catalog-results-column">
+                            <div id="catalog-results" class="catalog-results-panel">
+                                @include('home.partials.catalog-grid')
+                            </div>
                         </div>
-
-                        <a href="{{ url()->current() }}#catalog" class="clear-filters">RESET FILTER</a>
-                    </form>
-                </div>
-
-                <!-- Product Grid -->
-                <div class="col-lg-9">
-                    <div id="catalog-results" style="transition:opacity 0.25s ease;min-height:300px;">
-                        @include('home.partials.catalog-grid')
                     </div>
                 </div>
             </div>
@@ -679,6 +847,120 @@
 
     var searchTimer = null;
     var resultsEl   = document.getElementById('catalog-results');
+    var siteHeaderEl = document.querySelector('.site-header');
+    var catalogDesktopStageEl = document.querySelector('.js-catalog-desktop-stage');
+    var catalogDesktopShellEl = document.querySelector('.js-catalog-desktop-shell');
+    var catalogScrollFrame = null;
+    var catalogLayoutFrame = null;
+    var catalogDesktopState = {
+        enabled: false,
+        stickyTop: 0,
+        maxInternalScroll: 0,
+    };
+
+    function isDesktopCatalogMode() {
+        return window.innerWidth >= 992;
+    }
+
+    function bindCatalogResultImages() {
+        if (!resultsEl) return;
+
+        resultsEl.querySelectorAll('img').forEach(function (img) {
+            if (img.complete) return;
+
+            img.addEventListener('load', scheduleCatalogDesktopLayout, { once: true });
+            img.addEventListener('error', scheduleCatalogDesktopLayout, { once: true });
+        });
+    }
+
+    function syncCatalogDesktopScroll() {
+        if (!catalogDesktopState.enabled || !catalogDesktopStageEl || !resultsEl) return;
+
+        var stageRect = catalogDesktopStageEl.getBoundingClientRect();
+        var nextScrollTop = Math.max(
+            0,
+            Math.min(catalogDesktopState.stickyTop - stageRect.top, catalogDesktopState.maxInternalScroll)
+        );
+
+        resultsEl.scrollTop = nextScrollTop;
+    }
+
+    function applyCatalogDesktopLayout() {
+        if (!catalogDesktopStageEl || !catalogDesktopShellEl || !resultsEl) return;
+
+        if (!isDesktopCatalogMode()) {
+            catalogDesktopState.enabled = false;
+            catalogDesktopStageEl.style.height = '';
+            catalogDesktopShellEl.style.top = '';
+            catalogDesktopShellEl.style.height = '';
+            resultsEl.scrollTop = 0;
+            return;
+        }
+
+        var headerHeight = siteHeaderEl ? siteHeaderEl.offsetHeight : 0;
+        var stickyTop = headerHeight + 24;
+        var shellHeight = Math.max(window.innerHeight - stickyTop - 24, 420);
+
+        catalogDesktopShellEl.style.top = stickyTop + 'px';
+        catalogDesktopShellEl.style.height = shellHeight + 'px';
+
+        var maxInternalScroll = Math.max(resultsEl.scrollHeight - resultsEl.clientHeight, 0);
+
+        catalogDesktopStageEl.style.height = (shellHeight + maxInternalScroll) + 'px';
+        catalogDesktopState.enabled = true;
+        catalogDesktopState.stickyTop = stickyTop;
+        catalogDesktopState.maxInternalScroll = maxInternalScroll;
+
+        syncCatalogDesktopScroll();
+    }
+
+    function scheduleCatalogDesktopLayout() {
+        if (catalogLayoutFrame) cancelAnimationFrame(catalogLayoutFrame);
+
+        catalogLayoutFrame = requestAnimationFrame(function () {
+            catalogLayoutFrame = null;
+            applyCatalogDesktopLayout();
+        });
+    }
+
+    function scheduleCatalogDesktopScroll() {
+        if (catalogScrollFrame) return;
+
+        catalogScrollFrame = requestAnimationFrame(function () {
+            catalogScrollFrame = null;
+            syncCatalogDesktopScroll();
+        });
+    }
+
+    function initializeMobileCatalog() {
+        var mobileGrid = resultsEl.querySelector('.js-mobile-catalog-grid');
+        var viewMoreButton = resultsEl.querySelector('.js-mobile-view-more');
+
+        if (!mobileGrid || !viewMoreButton) return;
+
+        var items = Array.prototype.slice.call(mobileGrid.querySelectorAll('.js-mobile-catalog-item'));
+        var batchSize = parseInt(mobileGrid.dataset.batchSize || '4', 10);
+        var visibleCount = items.filter(function (item) {
+            return !item.classList.contains('is-hidden');
+        }).length;
+
+        function syncButtonState() {
+            viewMoreButton.style.display = visibleCount >= items.length ? 'none' : '';
+        }
+
+        viewMoreButton.addEventListener('click', function () {
+            var nextVisible = Math.min(visibleCount + batchSize, items.length);
+
+            for (var i = visibleCount; i < nextVisible; i++) {
+                items[i].classList.remove('is-hidden');
+            }
+
+            visibleCount = nextVisible;
+            syncButtonState();
+        });
+
+        syncButtonState();
+    }
 
     // ─── fetchCatalog: kirim AJAX, replace #catalog-results ──────────────────
     function fetchCatalog(patch) {
@@ -703,6 +985,9 @@
             resultsEl.innerHTML            = html;
             resultsEl.style.opacity        = '1';
             resultsEl.style.pointerEvents  = '';
+            initializeMobileCatalog();
+            bindCatalogResultImages();
+            scheduleCatalogDesktopLayout();
             // Update URL tanpa reload
             history.replaceState(
                 null, '',
@@ -714,6 +999,13 @@
             resultsEl.style.pointerEvents  = '';
         });
     }
+
+    initializeMobileCatalog();
+    bindCatalogResultImages();
+    scheduleCatalogDesktopLayout();
+    window.addEventListener('load', scheduleCatalogDesktopLayout);
+    window.addEventListener('resize', scheduleCatalogDesktopLayout);
+    window.addEventListener('scroll', scheduleCatalogDesktopScroll, { passive: true });
 
     // ─── Radio kategori ────────────────────────────────────────────────────────
     document.querySelectorAll('input[name="category"]').forEach(function (radio) {

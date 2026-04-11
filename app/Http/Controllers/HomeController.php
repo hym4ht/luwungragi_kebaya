@@ -45,6 +45,7 @@ class HomeController extends Controller
 
         $partialData = [
             'catalog'     => $allCatalog->forPage($currentPage, $perPage),
+            'fullCatalog' => $allCatalog,
             'totalItems'  => $totalItems,
             'totalPages'  => $totalPages,
             'currentPage' => $currentPage,
