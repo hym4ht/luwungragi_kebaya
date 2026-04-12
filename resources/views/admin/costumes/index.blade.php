@@ -12,12 +12,12 @@
 
     <!-- Modal Form -->
     <div class="modal fade" id="formBusanaModal" tabindex="-1" aria-labelledby="formBusanaModalLabel" aria-hidden="true" data-bs-backdrop="{{ $editingCostume ? 'static' : 'true' }}">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-bottom-0 pt-4 px-4 pb-0">
                     <h5 class="modal-title h4 fw-bold" id="formBusanaModalLabel">{{ $editingCostume ? 'Edit Busana' : 'Tambah Busana Baru' }}</h5>
                     @if($editingCostume)
-                        <a href="{{ route('admin.costumes.index') }}" class="btn-close" aria-label="Close"></button>
+                        <a href="{{ route('admin.costumes.index') }}" class="btn-close" aria-label="Close"></a>
                     @else
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     @endif
