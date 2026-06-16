@@ -11,14 +11,18 @@ use Illuminate\Support\Collection;
 
 class AvailabilityService
 {
-    public function getCatalog(?string $eventDate, ?string $keyword = null, ?string $category = null, int $rentalDays = Rental::MIN_RENTAL_DAYS): Collection
+    /**
+     * Ambil katalog dengan ketersediaan stok untuk satu sesi (SESSION_DAYS).
+     */
+    public function getCatalog(?string $eventDate, ?string $keyword = null, ?string $category = null, int $sessions = Rental::MIN_SESSIONS): Collection
     {
         $selectedEventDate = Carbon::parse(
             $eventDate ?: now()->addDays(Rental::BOOKING_BUFFER_DAYS)
         )->toDateString();
-        $schedule = Rental::scheduleFromEventDate($selectedEventDate, Rental::normalizeRentalDays($rentalDays));
+
+        $schedule  = Rental::scheduleFromEventDate($selectedEventDate, max(Rental::MIN_SESSIONS, $sessions));
         $startDate = $schedule['booking_start_date']->toDateString();
-        $endDate = $schedule['return_date']->toDateString();
+        $endDate   = $schedule['return_date']->toDateString();
 
         return Costume::query()
             ->search($keyword)

@@ -87,25 +87,42 @@ class LuwungragiFeatureTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Riwayat & status sewa busana Anda', false)
+            ->assertSee('kelola jadwal sewa busana Anda di sini', false)
             ->assertSee($customer->name);
+    }
+
+    public function test_customer_can_view_rental_details_and_see_download_pdf(): void
+    {
+        $customer = User::query()->where('email', 'ratri@luwungragi.test')->firstOrFail();
+        $rental = Rental::query()->where('user_id', $customer->id)->firstOrFail();
+        $token = app(JwtService::class)->issueToken($customer);
+
+        $response = $this
+            ->withCookie(config('jwt.cookie_name'), $token)
+            ->get(route('customer.rentals.show', $rental));
+
+        $response
+            ->assertOk()
+            ->assertSee('E-Invoice')
+            ->assertSee('Download PDF')
+            ->assertSee('1 Sesi');
     }
 
     public function test_customer_can_create_booking(): void
     {
-        $customer = User::query()->where('email', 'bagas@luwungragi.test')->firstOrFail();
-        $costume = Costume::query()->where('name', 'Kostum Wisuda Nusantara')->firstOrFail();
-        $token = app(JwtService::class)->issueToken($customer);
+        $customer  = User::query()->where('email', 'bagas@luwungragi.test')->firstOrFail();
+        $costume   = Costume::query()->where('name', 'Kostum Wisuda Nusantara')->firstOrFail();
+        $token     = app(JwtService::class)->issueToken($customer);
         $eventDate = now()->addDays(Rental::BOOKING_BUFFER_DAYS + 8)->toDateString();
-        $rentalDays = 5;
+        $sessions  = 2; // 2 sesi = 10 hari
 
         $response = $this
             ->withCookie(config('jwt.cookie_name'), $token)
             ->post(route('customer.rentals.store'), [
                 'costume_id' => $costume->id,
                 'event_date' => $eventDate,
-                'rental_days' => $rentalDays,
-                'quantity' => 1,
+                'sessions'   => $sessions,
+                'quantity'   => 1,
             ]);
 
         $response->assertRedirect();
@@ -116,14 +133,19 @@ class LuwungragiFeatureTest extends TestCase
             ->latest('id')
             ->firstOrFail();
 
+        $totalDays = $sessions * Rental::SESSION_DAYS; // 10
+
+        // rental_date = event - BOOKING_BUFFER_DAYS = now+11-3 = now+8
         $this->assertSame('pending', $createdRental->status->value);
         $this->assertSame($eventDate, $createdRental->event_date->toDateString());
         $this->assertSame(now()->addDays(8)->toDateString(), $createdRental->rental_date->toDateString());
         $this->assertSame(now()->addDays(9)->toDateString(), $createdRental->payment_due_date->toDateString());
         $this->assertSame(now()->addDays(10)->toDateString(), $createdRental->pickup_date->toDateString());
-        $this->assertSame(now()->addDays(16)->toDateString(), $createdRental->return_date->toDateString());
-        $this->assertSame($rentalDays, $createdRental->rental_duration_days);
-        $this->assertSame((float) $costume->rental_price * $rentalDays, (float) $createdRental->total_price);
+        // return_date = event + totalDays - 1 + RETURN_BUFFER_DAYS = now+11+9+1 = now+21
+        $this->assertSame(now()->addDays(21)->toDateString(), $createdRental->return_date->toDateString());
+        $this->assertSame($totalDays, $createdRental->rental_duration_days);
+        $this->assertSame($sessions, $createdRental->sessions_count);
+        $this->assertSame((float) $costume->rental_price * $totalDays, (float) $createdRental->total_price);
         $this->assertSame('Midtrans Snap', $createdRental->payment->payment_type);
     }
 

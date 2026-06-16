@@ -81,6 +81,21 @@
     .info-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.2rem; }
     .info-value { font-size: 0.9rem; font-weight: 600; color: var(--text-dark); }
 
+    .session-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(88,13,33,0.06);
+        border: 1px solid rgba(88,13,33,0.15);
+        color: var(--brand-maroon);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.75rem;
+        border-radius: 2px;
+    }
+
     .items-table {
         width: 100%;
         border-collapse: collapse;
@@ -149,14 +164,6 @@
     .btn-pay-now:hover { background: #3f0917; }
     .btn-pay-now:disabled { background: #aaa; cursor: not-allowed; }
 
-    .proof-img {
-        width: 100%;
-        max-height: 200px;
-        object-fit: contain;
-        border: 1px solid rgba(0,0,0,0.1);
-        margin-top: 0.75rem;
-    }
-
     .alert-success-custom {
         background: rgba(6,95,70,0.07);
         border-left: 3px solid #065f46;
@@ -166,47 +173,29 @@
         margin-bottom: 1.5rem;
     }
 
-    /* Payment Selection Styles */
-    .payment-cards {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
-    .payment-card {
-        border: 1px solid rgba(88,13,33,0.1);
-        padding: 1rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: all 0.2s;
-        position: relative;
-    }
-    .payment-card:hover { border-color: rgba(88,13,33,0.3); }
-    .payment-card.selected {
-        border-color: var(--brand-maroon);
-        background: rgba(88,13,33,0.02);
-    }
-    .payment-card input[type="radio"] { display: none; }
-    .payment-card-icon { font-size: 1.5rem; }
-    .payment-card-body {
-        display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-    .payment-card-title {
+    .btn-download-pdf {
         font-size: 0.75rem;
         font-weight: 700;
-        color: var(--text-dark);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: white;
+        background-color: var(--brand-maroon);
+        border: 1px solid var(--brand-maroon);
+        padding: 0.5rem 1.25rem;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
     }
-    .payment-card-desc {
-        font-size: 0.65rem;
-        color: var(--text-muted);
+    .btn-download-pdf:hover {
+        background-color: #3f0917;
+        border-color: #3f0917;
+        color: white;
     }
 </style>
 
-@php($durationDays = $rental->rental_duration_days)
 @php($processDays = $rental->process_duration_days)
 
 <div class="invoice-wrap">
@@ -216,7 +205,16 @@
                 <h1 class="invoice-title">E-Invoice</h1>
                 <div class="invoice-sub">{{ $rental->invoice_number }}</div>
             </div>
-            <a href="{{ route('home') }}" class="back-link">← Kembali ke Catalog</a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ route('customer.rentals.pdf', $rental) }}" class="btn-download-pdf">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                    </svg>
+                    Download PDF
+                </a>
+                <a href="{{ route('home') }}" class="back-link">← Kembali ke Catalog</a>
+            </div>
         </div>
 
         @if(session('success'))
@@ -228,7 +226,10 @@
             <div class="col-lg-8">
                 <!-- Rental Info -->
                 <div class="panel">
-                    <div class="panel-title">Informasi Penyewaan</div>
+                    <div class="panel-title">
+                        Informasi Penyewaan
+                        <span class="session-badge ms-2">{{ $rental->sessions_count }} Sesi &middot; {{ $rental->rental_duration_days }} Hari</span>
+                    </div>
                     <div class="info-grid">
                         <div>
                             <div class="info-label">Nama Penyewa</div>
@@ -259,12 +260,12 @@
                             <div class="info-value">{{ $rental->pickup_date->format('d M Y') }}</div>
                         </div>
                         <div>
-                            <div class="info-label">Tanggal Kembali</div>
+                            <div class="info-label">Batas Kembali</div>
                             <div class="info-value">{{ $rental->return_due_date->format('d M Y') }}</div>
                         </div>
                         <div>
                             <div class="info-label">Durasi Sewa</div>
-                            <div class="info-value">{{ $durationDays }} Hari</div>
+                            <div class="info-value">{{ $rental->sessions_count }} Sesi ({{ $rental->rental_duration_days }} Hari)</div>
                         </div>
                         <div>
                             <div class="info-label">Durasi Proses</div>
@@ -286,7 +287,7 @@
                                 <th>Nama Busana</th>
                                 <th style="text-align:center">Qty</th>
                                 <th style="text-align:right">Harga/hari</th>
-                                <th style="text-align:right">Subtotal</th>
+                                <th style="text-align:right">Subtotal ({{ $rental->rental_duration_days }} hari)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -295,7 +296,7 @@
                                     <td>{{ $detail->costume->name }}</td>
                                     <td style="text-align:center">{{ $detail->quantity }}</td>
                                     <td style="text-align:right">Rp{{ number_format((float) $detail->unit_price, 0, ',', '.') }}</td>
-                                    <td style="text-align:right">Rp{{ number_format((float) $detail->unit_price * $detail->quantity * $durationDays, 0, ',', '.') }}</td>
+                                    <td style="text-align:right">Rp{{ number_format((float) $detail->unit_price * $detail->quantity * $rental->rental_duration_days, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -369,6 +370,17 @@
                                 <div class="info-value">{{ $rental->payment->paid_at->format('d M Y, H:i') }}</div>
                             </div>
                         @endif
+                    </div>
+
+                    <!-- Denda info -->
+                    <div class="panel" style="background: rgba(88,13,33,0.03);">
+                        <div class="panel-title">Info Denda</div>
+                        <div class="info-label">Keterlambatan pengembalian</div>
+                        <div class="info-value" style="color: var(--brand-maroon);">Rp{{ number_format(\App\Models\Rental::LATE_FEE_PER_DAY, 0, ',', '.') }}/hari</div>
+                        <div style="margin-top: 0.75rem;">
+                            <div class="info-label">Batas Kembali</div>
+                            <div class="info-value">{{ $rental->return_due_date->format('d M Y') }}</div>
+                        </div>
                     </div>
                 @endif
             </div>

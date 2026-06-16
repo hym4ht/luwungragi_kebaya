@@ -14,33 +14,37 @@ use Illuminate\Support\Facades\DB;
 
 class RentalWorkflowService
 {
+    /**
+     * Buat booking baru. Satu booking = 1 sesi (SESSION_DAYS hari).
+     */
     public function createBooking(User $user, Costume $costume, array $payload): Rental
     {
         return DB::transaction(function () use ($user, $costume, $payload): Rental {
-            $eventDate = Carbon::parse($payload['event_date'] ?? $payload['rental_date'])->startOfDay();
-            $schedule = Rental::scheduleFromEventDate($eventDate, (int) ($payload['rental_days'] ?? Rental::MIN_RENTAL_DAYS));
-            $quantity = (int) $payload['quantity'];
+            $eventDate  = Carbon::parse($payload['event_date'])->startOfDay();
+            $sessions   = max(Rental::MIN_SESSIONS, (int) ($payload['sessions'] ?? Rental::MIN_SESSIONS));
+            $schedule   = Rental::scheduleFromEventDate($eventDate, $sessions);
+            $quantity   = (int) $payload['quantity'];
             $totalPrice = $schedule['rental_days'] * $quantity * (float) $costume->rental_price;
 
             $rental = Rental::query()->create([
-                'user_id' => $user->id,
+                'user_id'        => $user->id,
                 'invoice_number' => $this->generateInvoiceNumber(),
-                'event_date' => $schedule['event_date']->toDateString(),
-                'rental_date' => $schedule['booking_start_date']->toDateString(),
-                'return_date' => $schedule['return_date']->toDateString(),
-                'total_price' => $totalPrice,
-                'status' => RentalStatus::Pending,
+                'event_date'     => $schedule['event_date']->toDateString(),
+                'rental_date'    => $schedule['booking_start_date']->toDateString(),
+                'return_date'    => $schedule['return_date']->toDateString(),
+                'total_price'    => $totalPrice,
+                'status'         => RentalStatus::Pending,
             ]);
 
             $rental->details()->create([
                 'costume_id' => $costume->id,
-                'quantity' => $quantity,
+                'quantity'   => $quantity,
                 'unit_price' => $costume->rental_price,
             ]);
 
             $rental->payment()->create([
                 'payment_type' => 'Midtrans Snap',
-                'status' => PaymentStatus::Pending,
+                'status'       => PaymentStatus::Pending,
             ]);
 
             return $rental->load(['user', 'details.costume', 'payment']);
@@ -50,7 +54,7 @@ class RentalWorkflowService
     public function updatePaymentStatus(Payment $payment, PaymentStatus $status): Payment
     {
         $payment->fill([
-            'status' => $status,
+            'status'  => $status,
             'paid_at' => $status === PaymentStatus::Settlement ? now() : null,
         ])->save();
 
@@ -79,12 +83,11 @@ class RentalWorkflowService
     public function recordReturn(Rental $rental, array $payload): RentalReturn
     {
         $returnedDate = Carbon::parse($payload['returned_date'])->startOfDay();
-        $lateDays = $rental->lateDaysFor($returnedDate);
-        $damageFee = (float) ($payload['damage_fee'] ?? 0);
-        $fineAmount = ($lateDays * Rental::LATE_FEE_PER_DAY) + $damageFee;
+        $lateDays     = $rental->lateDaysFor($returnedDate);
+        $damageFee    = (float) ($payload['damage_fee'] ?? 0);
+        $fineAmount   = ($lateDays * Rental::LATE_FEE_PER_DAY) + $damageFee;
 
         $returnStatus = 'On Time';
-
         if ($damageFee > 0) {
             $returnStatus = 'Damaged';
         } elseif ($lateDays > 0) {
@@ -96,7 +99,7 @@ class RentalWorkflowService
                 ['rental_id' => $rental->id],
                 [
                     'returned_date' => $returnedDate->toDateString(),
-                    'fine_amount' => $fineAmount,
+                    'fine_amount'   => $fineAmount,
                     'return_status' => $returnStatus,
                 ],
             );
@@ -109,11 +112,11 @@ class RentalWorkflowService
 
     private function generateInvoiceNumber(): string
     {
-        $prefix = 'RNT-'.now()->format('Ymd');
+        $prefix   = 'RNT-' . now()->format('Ymd');
         $sequence = Rental::query()
-            ->where('invoice_number', 'like', $prefix.'-%')
+            ->where('invoice_number', 'like', $prefix . '-%')
             ->count() + 1;
 
-        return $prefix.'-'.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
+        return $prefix . '-' . str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
     }
 }

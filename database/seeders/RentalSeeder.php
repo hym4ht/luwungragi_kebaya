@@ -23,19 +23,18 @@ class RentalSeeder extends Seeder
             return;
         }
 
-
+        // ── 1. Selesai (completed) ──────────────────────────────────────────
         $this->createCompletedRental(
             customer: $customers->where('email', 'ratri@luwungragi.test')->first() ?? $customers->first(),
             costumes: $costumes->where('category', 'Kebaya')->take(2),
-            daysAgo: 20,
+            daysAgo:  20,
             paymentType: 'qris',
-            late: false,
         );
 
         $this->createCompletedRental(
             customer: $customers->where('email', 'dewi@luwungragi.test')->first() ?? $customers->get(1),
             costumes: $costumes->where('category', 'Kostum Adat')->take(1),
-            daysAgo: 14,
+            daysAgo:  14,
             paymentType: 'va_bni',
             late: true,
             fineAmount: 30000,
@@ -44,15 +43,14 @@ class RentalSeeder extends Seeder
         $this->createCompletedRental(
             customer: $customers->where('email', 'sari@luwungragi.test')->first() ?? $customers->get(2),
             costumes: $costumes->where('category', 'Kostum Tari')->take(2),
-            daysAgo: 30,
+            daysAgo:  30,
             paymentType: 'gopay',
-            late: false,
         );
 
         $this->createCompletedRental(
             customer: $customers->where('email', 'andi@luwungragi.test')->first() ?? $customers->get(3),
             costumes: $costumes->where('category', 'Kostum Event')->take(1),
-            daysAgo: 10,
+            daysAgo:  10,
             paymentType: 'va_bca',
             late: true,
             fineAmount: 15000,
@@ -61,12 +59,11 @@ class RentalSeeder extends Seeder
         $this->createCompletedRental(
             customer: $customers->where('email', 'mega@luwungragi.test')->first() ?? $customers->get(4),
             costumes: $costumes->where('category', 'Kebaya')->skip(2)->take(2),
-            daysAgo: 45,
+            daysAgo:  45,
             paymentType: 'qris',
-            late: false,
         );
 
-        // ── 2. Rentals ACTIVE (sedang disewa) ──────────────────────────────
+        // ── 2. Aktif (active) ───────────────────────────────────────────────
         $this->createActiveRental(
             customer: $customers->where('email', 'dewi@luwungragi.test')->first() ?? $customers->get(1),
             costumes: $costumes->where('category', 'Kostum Adat')->skip(1)->take(1),
@@ -88,7 +85,7 @@ class RentalSeeder extends Seeder
             paymentType: 'va_bri',
         );
 
-        // ── 3. Rentals PENDING (menunggu konfirmasi) ───────────────────────
+        // ── 3. Menunggu (pending) ───────────────────────────────────────────
         $this->createPendingRental(
             customer: $customers->where('email', 'bagas@luwungragi.test')->first() ?? $customers->get(2),
             costumes: $costumes->where('category', 'Kostum Adat')->skip(2)->take(1),
@@ -109,7 +106,7 @@ class RentalSeeder extends Seeder
             snapToken: 'SNAP-DEMO-INDAH-001',
         );
 
-        // ── 4. Rentals CANCELLED ───────────────────────────────────────────
+        // ── 4. Dibatalkan (cancelled) ───────────────────────────────────────
         $this->createCancelledRental(
             customer: $customers->where('email', 'ratri@luwungragi.test')->first() ?? $customers->first(),
             costumes: $costumes->where('category', 'Kebaya')->skip(1)->take(1),
@@ -138,10 +135,10 @@ class RentalSeeder extends Seeder
         bool $late = false,
         float $fineAmount = 0,
     ): void {
-        $usageDate = now()->subDays(max($daysAgo - Rental::BOOKING_BUFFER_DAYS, 0))->startOfDay();
-        $schedule = Rental::scheduleFromEventDate($usageDate);
+        $usageDate    = now()->subDays(max($daysAgo - Rental::BOOKING_BUFFER_DAYS, 0))->startOfDay();
+        $schedule     = Rental::scheduleFromEventDate($usageDate);
         $costumesList = collect($costumes);
-        $totalPrice = $costumesList->sum(fn ($costume) => (float) $costume->rental_price * $schedule['rental_days']);
+        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -161,24 +158,21 @@ class RentalSeeder extends Seeder
             ]);
         }
 
-        $paymentData = [
-            'payment_type' => $paymentType ?: 'Midtrans Snap',
-            'status'       => PaymentStatus::Settlement,
-            'paid_at'      => $schedule['payment_due_date']->copy(),
-            'snap_token'   => 'SNAP-' . $rental->invoice_number,
+        $rental->payment()->create([
+            'payment_type'            => $paymentType ?: 'Midtrans Snap',
+            'status'                  => PaymentStatus::Settlement,
+            'paid_at'                 => $schedule['payment_due_date']->copy(),
+            'snap_token'              => 'SNAP-' . $rental->invoice_number,
             'midtrans_transaction_id' => 'MID-' . $rental->invoice_number,
-        ];
+        ]);
 
-        $rental->payment()->create($paymentData);
-
-        $lateDays = $late ? max((int) round($fineAmount / Rental::LATE_FEE_PER_DAY), 1) : 0;
+        $lateDays     = $late ? max((int) round($fineAmount / Rental::LATE_FEE_PER_DAY), 1) : 0;
         $returnedDate = $schedule['return_date']->copy()->addDays($lateDays)->toDateString();
-        $returnStatus = $late ? 'Late' : 'On Time';
 
         $rental->returnRecord()->create([
             'returned_date' => $returnedDate,
             'fine_amount'   => $fineAmount,
-            'return_status' => $returnStatus,
+            'return_status' => $late ? 'Late' : 'On Time',
         ]);
     }
 
@@ -189,10 +183,11 @@ class RentalSeeder extends Seeder
         string $paymentType = '',
     ): void {
         $costumesList = collect($costumes);
-        $returnDate = now()->addDays($returnInDays)->startOfDay();
-        $usageDate = $returnDate->copy()->subDay();
-        $schedule = Rental::scheduleFromEventDate($usageDate);
-        $totalPrice = $costumesList->sum(fn ($costume) => (float) $costume->rental_price * $schedule['rental_days']);
+        $returnDate   = now()->addDays($returnInDays)->startOfDay();
+        // usage_date = return_date - RETURN_BUFFER_DAYS - (SESSION_DAYS - 1)
+        $usageDate    = $returnDate->copy()->subDays(Rental::SESSION_DAYS - 1 + Rental::RETURN_BUFFER_DAYS);
+        $schedule     = Rental::scheduleFromEventDate($usageDate);
+        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -212,15 +207,13 @@ class RentalSeeder extends Seeder
             ]);
         }
 
-        $paymentData = [
-            'payment_type' => $paymentType ?: 'Midtrans Snap',
-            'status'       => PaymentStatus::Settlement,
-            'paid_at'      => $schedule['payment_due_date']->copy(),
-            'snap_token'   => 'SNAP-' . $rental->invoice_number,
+        $rental->payment()->create([
+            'payment_type'            => $paymentType ?: 'Midtrans Snap',
+            'status'                  => PaymentStatus::Settlement,
+            'paid_at'                 => $schedule['payment_due_date']->copy(),
+            'snap_token'              => 'SNAP-' . $rental->invoice_number,
             'midtrans_transaction_id' => 'MID-' . $rental->invoice_number,
-        ];
-
-        $rental->payment()->create($paymentData);
+        ]);
     }
 
     private function createPendingRental(
@@ -229,11 +222,11 @@ class RentalSeeder extends Seeder
         int $startInDays,
         ?string $snapToken = null,
     ): void {
-        $costumesList = collect($costumes);
+        $costumesList    = collect($costumes);
         $bookingStartDate = now()->addDays($startInDays)->startOfDay();
-        $usageDate = $bookingStartDate->copy()->addDays(Rental::BOOKING_BUFFER_DAYS);
-        $schedule = Rental::scheduleFromEventDate($usageDate);
-        $totalPrice = $costumesList->sum(fn ($costume) => (float) $costume->rental_price * $schedule['rental_days']);
+        $usageDate        = $bookingStartDate->copy()->addDays(Rental::BOOKING_BUFFER_DAYS);
+        $schedule         = Rental::scheduleFromEventDate($usageDate);
+        $totalPrice       = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -271,9 +264,9 @@ class RentalSeeder extends Seeder
         PaymentStatus $paymentStatus,
     ): void {
         $costumesList = collect($costumes);
-        $usageDate = now()->addDays(Rental::BOOKING_BUFFER_DAYS)->startOfDay();
-        $schedule = Rental::scheduleFromEventDate($usageDate);
-        $totalPrice = $costumesList->sum(fn ($costume) => (float) $costume->rental_price * $schedule['rental_days']);
+        $usageDate    = now()->addDays(Rental::BOOKING_BUFFER_DAYS)->startOfDay();
+        $schedule     = Rental::scheduleFromEventDate($usageDate);
+        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -293,13 +286,11 @@ class RentalSeeder extends Seeder
             ]);
         }
 
-        $paymentData = [
-            'payment_type' => 'Midtrans Snap',
-            'status'       => $paymentStatus,
-            'snap_token'   => 'SNAP-' . $rental->invoice_number,
+        $rental->payment()->create([
+            'payment_type'            => 'Midtrans Snap',
+            'status'                  => $paymentStatus,
+            'snap_token'              => 'SNAP-' . $rental->invoice_number,
             'midtrans_transaction_id' => 'MID-' . $rental->invoice_number,
-        ];
-
-        $rental->payment()->create($paymentData);
+        ]);
     }
 }

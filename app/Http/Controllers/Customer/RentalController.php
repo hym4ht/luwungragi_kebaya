@@ -7,9 +7,11 @@ use App\Models\Costume;
 use App\Models\Rental;
 use App\Services\AvailabilityService;
 use App\Services\RentalWorkflowService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RentalController extends Controller
 {
@@ -22,15 +24,17 @@ class RentalController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'costume_id'  => ['required', 'exists:costumes,id'],
-            'event_date' => ['required', 'date', 'after_or_equal:'.now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
-            'rental_days' => ['required', 'integer', 'min:'.Rental::MIN_RENTAL_DAYS, 'max:'.Rental::MAX_RENTAL_DAYS],
-            'quantity'    => ['required', 'integer', 'min:1'],
+            'costume_id' => ['required', 'exists:costumes,id'],
+            'event_date' => ['required', 'date', 'after_or_equal:' . now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
+            'sessions'   => ['required', 'integer', 'min:' . Rental::MIN_SESSIONS],
+            'quantity'   => ['required', 'integer', 'min:1'],
         ]);
 
-        $costume = Costume::query()->findOrFail($validated['costume_id']);
+        $sessions = (int) $validated['sessions'];
+        $costume  = Costume::query()->findOrFail($validated['costume_id']);
+
         $selectedCostume = $this->availabilityService
-            ->getCatalog($validated['event_date'], rentalDays: (int) $validated['rental_days'])
+            ->getCatalog($validated['event_date'], sessions: $sessions)
             ->firstWhere('id', $costume->id);
 
         if (! $selectedCostume || $selectedCostume->available_stock < (int) $validated['quantity']) {
@@ -53,5 +57,19 @@ class RentalController extends Controller
         return view('customer.rentals.show', [
             'rental' => $rental->load(['details.costume', 'payment', 'returnRecord', 'user']),
         ]);
+    }
+
+    public function downloadPdf(Request $request, Rental $rental): Response
+    {
+        abort_unless($rental->user_id === $request->user()->id, 403);
+
+        $rental->load(['details.costume', 'payment', 'returnRecord', 'user']);
+
+        $pdf = Pdf::loadView('customer.rentals.pdf', ['rental' => $rental])
+            ->setPaper('a5', 'portrait');
+
+        $filename = 'struk-' . $rental->invoice_number . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

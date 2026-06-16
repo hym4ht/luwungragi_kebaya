@@ -41,6 +41,7 @@ Route::middleware('jwt.auth')->group(function (): void {
         Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders');
         Route::post('/rentals', [CustomerRentalController::class, 'store'])->name('rentals.store');
         Route::get('/rentals/{rental}', [CustomerRentalController::class, 'show'])->name('rentals.show');
+        Route::get('/rentals/{rental}/pdf', [CustomerRentalController::class, 'downloadPdf'])->name('rentals.pdf');
 
         // Midtrans Snap token generation (AJAX)
         Route::post('/rentals/{rental}/midtrans-token', [MidtransController::class, 'generateToken'])

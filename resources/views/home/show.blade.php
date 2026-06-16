@@ -478,7 +478,7 @@
                 <h1 class="product-title">{{ $costume->name }}</h1>
                 
                 <div class="price-wrap">
-                    <div class="price">IDR {{ number_format((float)$costume->rental_price, 0, ',', '.') }} <span>/ hari</span></div>
+                    <div class="price">IDR {{ number_format((float)$costume->rental_price, 0, ',', '.') }} <span>/ hari &middot; 1 sesi = {{ \App\Models\Rental::SESSION_DAYS }} hari</span></div>
                     <div class="rating">
                         <span style="color: #d4af37;">★</span> 4.9 (128 Reviews)
                     </div>
@@ -550,10 +550,12 @@
                                 >
                             </div>
                             <div class="date-col">
-                                <label class="date-label" for="rental_days">LAMA SEWA</label>
-                                <select name="rental_days" id="rental_days" class="date-input" required>
-                                    @for ($day = \App\Models\Rental::MIN_RENTAL_DAYS; $day <= \App\Models\Rental::MAX_RENTAL_DAYS; $day++)
-                                        <option value="{{ $day }}" @selected((int) old('rental_days', 1) === $day)>{{ $day }} Hari</option>
+                                <label class="date-label" for="sessions">JUMLAH SESI</label>
+                                <select name="sessions" id="sessions" class="date-input" required>
+                                    @for ($s = \App\Models\Rental::MIN_SESSIONS; $s <= 4; $s++)
+                                        <option value="{{ $s }}" @selected((int) old('sessions', 1) === $s)>
+                                            {{ $s }} Sesi ({{ $s * \App\Models\Rental::SESSION_DAYS }} hari)
+                                        </option>
                                     @endfor
                                 </select>
                             </div>
@@ -571,16 +573,16 @@
 
                         <!-- Price Summary -->
                         <div class="fee-row">
-                            <span>Harga per hari × qty × lama sewa</span>
+                            <span>Harga per hari × qty × <span id="days_display">{{ \App\Models\Rental::SESSION_DAYS }}</span> hari</span>
                             <span>IDR <span id="base_price_display">{{ number_format((float)$costume->rental_price, 0, ',', '.') }}</span></span>
                         </div>
                         <div class="total-row">
                             <span>Total</span>
-                            <span>IDR <span id="total_price_display">{{ number_format((float) $costume->rental_price, 0, ',', '.') }}</span></span>
+                            <span>IDR <span id="total_price_display">{{ number_format((float) $costume->rental_price * \App\Models\Rental::SESSION_DAYS, 0, ',', '.') }}</span></span>
                         </div>
                         <div class="fee-row">
                             <span>Alur otomatis</span>
-                            <span id="schedule_preview">Order H-3 · Lunas H-2 · Ambil H-1 · Kembali +1 hari</span>
+                            <span id="schedule_preview">Order H-3 · Lunas H-2 · Ambil H-1 · Kembali H+{{ \App\Models\Rental::SESSION_DAYS }}</span>
                         </div>
                         <div class="fee-row">
                             <span>Denda keterlambatan</span>
@@ -664,30 +666,33 @@
     document.getElementById('qtyPlus')?.addEventListener('click',  () => updateQty(qty + 1));
 
     // ─── Price Calculation ─────────────────────────────────────
-    const basePrice    = {{ floatval($costume->rental_price) }};
-    const eventInput   = document.getElementById('event_date');
-    const rentalDaysInput = document.getElementById('rental_days');
-    const totalDisplay = document.getElementById('total_price_display');
+    const basePrice     = {{ floatval($costume->rental_price) }};
+    const sessionDays   = {{ \App\Models\Rental::SESSION_DAYS }};
+    const eventInput    = document.getElementById('event_date');
+    const sessionsInput = document.getElementById('sessions');
+    const totalDisplay  = document.getElementById('total_price_display');
+    const daysDisplay   = document.getElementById('days_display');
     const schedulePreview = document.getElementById('schedule_preview');
 
     function formatShortDate(date) {
         return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     }
 
+    function getSessions() {
+        return Math.max({{ \App\Models\Rental::MIN_SESSIONS }}, parseInt(sessionsInput?.value || '1', 10) || 1);
+    }
+
     function updateSchedulePreview() {
-        if (!eventInput || !schedulePreview || !eventInput.value) {
+        if (!eventInput || !schedulePreview || !eventInput.value) return;
+
+        const eventDate = new Date(eventInput.value + 'T00:00:00');
+        if (isNaN(eventDate)) {
+            schedulePreview.textContent = 'Order H-3 · Lunas H-2 · Ambil H-1 · Kembali H+{{ \App\Models\Rental::SESSION_DAYS }}';
             return;
         }
 
-        const eventDate = new Date(eventInput.value + 'T00:00:00');
-        const rentalDays = Math.max(
-            {{ \App\Models\Rental::MIN_RENTAL_DAYS }},
-            Math.min({{ \App\Models\Rental::MAX_RENTAL_DAYS }}, parseInt(rentalDaysInput?.value || '1', 10) || 1)
-        );
-        if (isNaN(eventDate)) {
-            schedulePreview.textContent = 'Order H-3 · Lunas H-2 · Ambil H-1 · Kembali +1 hari';
-            return;
-        }
+        const sessions   = getSessions();
+        const totalDays  = sessions * sessionDays;
 
         const bookingDate = new Date(eventDate);
         bookingDate.setDate(bookingDate.getDate() - {{ \App\Models\Rental::BOOKING_BUFFER_DAYS }});
@@ -699,30 +704,26 @@
         pickupDate.setDate(pickupDate.getDate() - {{ \App\Models\Rental::PICKUP_BUFFER_DAYS }});
 
         const usageEndDate = new Date(eventDate);
-        usageEndDate.setDate(usageEndDate.getDate() + rentalDays - 1);
+        usageEndDate.setDate(usageEndDate.getDate() + totalDays - 1);
 
-        const returnDate = new Date(eventDate);
-        returnDate.setDate(returnDate.getDate() + rentalDays - 1 + {{ \App\Models\Rental::RETURN_BUFFER_DAYS }});
+        const returnDate = new Date(usageEndDate);
+        returnDate.setDate(returnDate.getDate() + {{ \App\Models\Rental::RETURN_BUFFER_DAYS }});
 
-        const usageRange = rentalDays > 1
-            ? ` · Sewa ${formatShortDate(eventDate)}-${formatShortDate(usageEndDate)}`
-            : '';
+        if (daysDisplay) daysDisplay.textContent = totalDays;
 
-        schedulePreview.textContent = `Order ${formatShortDate(bookingDate)} · Lunas max ${formatShortDate(paymentDate)} · Ambil ${formatShortDate(pickupDate)}${usageRange} · Kembali ${formatShortDate(returnDate)}`;
+        schedulePreview.textContent =
+            `Order ${formatShortDate(bookingDate)} · Lunas max ${formatShortDate(paymentDate)} · Ambil ${formatShortDate(pickupDate)} · Sewa s/d ${formatShortDate(usageEndDate)} · Kembali ${formatShortDate(returnDate)}`;
     }
 
     function calculateTotal() {
-        const rentalDays = Math.max(
-            {{ \App\Models\Rental::MIN_RENTAL_DAYS }},
-            Math.min({{ \App\Models\Rental::MAX_RENTAL_DAYS }}, parseInt(rentalDaysInput?.value || '1', 10) || 1)
-        );
-        const total = basePrice * qty * rentalDays;
+        const sessions  = getSessions();
+        const total     = basePrice * qty * sessions * sessionDays;
         if (totalDisplay) totalDisplay.textContent = total.toLocaleString('id-ID');
         updateSchedulePreview();
     }
 
     eventInput?.addEventListener('change', calculateTotal);
-    rentalDaysInput?.addEventListener('change', calculateTotal);
+    sessionsInput?.addEventListener('change', calculateTotal);
     calculateTotal();
 </script>
 </x-layouts.app>
