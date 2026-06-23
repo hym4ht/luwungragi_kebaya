@@ -53,7 +53,7 @@
         <div class="row align-items-center">
             <div class="col-lg-4 mb-4 mb-lg-0 text-center text-lg-start">
                 <div class="footer-brand">Luwungragi Heritage</div>
-                <div class="footer-copyright">&copy; {{ date('Y') }} LUWUNGRAGI HERITAGE. ALL RIGHTS RESERVED.</div>
+                <div class="footer-copyright">&copy; {{ date('Y') }} LUWUNGRAGI HERITAGE. X Universitas Harkat Negeri Tegal ALL RIGHTS RESERVED .</div>
             </div>
             <div class="col-lg-6 mb-4 mb-lg-0">
                 <div class="d-flex justify-content-center flex-wrap gap-4">
