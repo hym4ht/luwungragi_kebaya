@@ -11,9 +11,41 @@
         font-weight: 700;
         text-decoration: none;
         letter-spacing: 1px;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        height: 60px;
     }
     .brand-logo:hover {
         color: var(--brand-maroon, #580d21);
+    }
+    .brand-logo-img {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 120px;
+        width: 120px;
+        object-fit: contain;
+        z-index: 1050;
+        transition: transform 0.3s ease;
+    }
+    .brand-logo-img:hover {
+        transform: translateY(-50%) scale(1.05);
+    }
+    .brand-logo-text {
+        margin-left: 100px;
+    }
+    @media (max-width: 991.98px) {
+        .brand-logo {
+            height: 45px;
+        }
+        .brand-logo-img {
+            height: 100px;
+            width: 100px;
+        }
+        .brand-logo-text {
+            margin-left: 85px;
+        }
     }
     .nav-link-custom {
         color: var(--text-muted, #79665e);
@@ -33,7 +65,7 @@
         border-bottom: 2px solid var(--brand-maroon, #580d21);
     }
     .site-header {
-        padding: 1.5rem 0;
+        padding: 0.5rem 0;
         background: var(--bg-cream, #FDFBF7);
         border-bottom: none;
         z-index: 1030;
@@ -59,9 +91,9 @@
 
 <nav class="navbar navbar-expand-lg site-header w-100 sticky-top">
     <div class="container-fluid px-4 px-lg-5">
-        <a class="navbar-brand brand-logo d-flex align-items-center" href="{{ $homeUrl }}">
-            <img src="{{ asset('images/logo.png') }}" alt="Luwungragi Logo" width="32" height="32" class="me-2" style="object-fit: contain;">
-            <span>Luwungragi</span>
+        <a class="navbar-brand brand-logo" href="{{ $homeUrl }}">
+            <img src="{{ asset('images/logo.png') }}" alt="Luwungragi Logo" class="brand-logo-img">
+            <span class="brand-logo-text">Luwungragi</span>
         </a>
         
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#appNavbar" aria-controls="appNavbar" aria-expanded="false" aria-label="Toggle navigation">
