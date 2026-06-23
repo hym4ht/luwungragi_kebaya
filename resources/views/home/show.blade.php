@@ -578,7 +578,7 @@
                         </div>
                         <div class="fee-row mt-2">
                             <span>Alur otomatis</span>
-                            <span id="schedule_preview">Order H-3 · Lunas H-2 · Ambil H-1 · Kembali H+{{ \App\Models\Rental::SESSION_DAYS }}</span>
+                            <span id="schedule_preview">Order H-3 · Lunas H-2 · Ambil H-1 · Kembali H+1</span>
                         </div>
                         <div class="fee-row">
                             <span>Denda keterlambatan</span>
@@ -699,11 +699,11 @@
         const pickupDate = new Date(eventDate);
         pickupDate.setDate(pickupDate.getDate() - {{ \App\Models\Rental::PICKUP_BUFFER_DAYS }});
 
-        const usageEndDate = new Date(eventDate);
-        usageEndDate.setDate(usageEndDate.getDate() + totalDays - 1);
+        const returnDate = new Date(bookingDate);
+        returnDate.setDate(returnDate.getDate() + totalDays - 1);
 
-        const returnDate = new Date(usageEndDate);
-        returnDate.setDate(returnDate.getDate() + {{ \App\Models\Rental::RETURN_BUFFER_DAYS }});
+        const usageEndDate = new Date(returnDate);
+        usageEndDate.setDate(usageEndDate.getDate() - {{ \App\Models\Rental::RETURN_BUFFER_DAYS }});
 
         if (daysDisplay) daysDisplay.textContent = totalDays;
 
