@@ -114,15 +114,16 @@ class LuwungragiFeatureTest extends TestCase
         $costume   = Costume::query()->where('name', 'Kostum Wisuda Nusantara')->firstOrFail();
         $token     = app(JwtService::class)->issueToken($customer);
         $eventDate = now()->addDays(Rental::BOOKING_BUFFER_DAYS + 8)->toDateString();
-        $sessions  = 2; // 2 sesi = 10 hari
+        $sessions  = 1;
 
         $response = $this
             ->withCookie(config('jwt.cookie_name'), $token)
-            ->post(route('customer.rentals.store'), [
-                'costume_id' => $costume->id,
-                'event_date' => $eventDate,
-                'sessions'   => $sessions,
-                'quantity'   => 1,
+            ->post(route('customer.checkout.store'), [
+                'costume_id'    => $costume->id,
+                'event_date'    => $eventDate,
+                'sessions'      => $sessions,
+                'quantity'      => 1,
+                'identity_card' => \Illuminate\Http\UploadedFile::fake()->image('ktp.jpg'),
             ]);
 
         $response->assertRedirect();
@@ -133,7 +134,7 @@ class LuwungragiFeatureTest extends TestCase
             ->latest('id')
             ->firstOrFail();
 
-        $totalDays = $sessions * Rental::SESSION_DAYS; // 10
+        $totalDays = $sessions * Rental::SESSION_DAYS; // 5
 
         // rental_date = event - BOOKING_BUFFER_DAYS = now+11-3 = now+8
         $this->assertSame('pending', $createdRental->status->value);
@@ -141,11 +142,12 @@ class LuwungragiFeatureTest extends TestCase
         $this->assertSame(now()->addDays(8)->toDateString(), $createdRental->rental_date->toDateString());
         $this->assertSame(now()->addDays(9)->toDateString(), $createdRental->payment_due_date->toDateString());
         $this->assertSame(now()->addDays(10)->toDateString(), $createdRental->pickup_date->toDateString());
-        // return_date = event + totalDays - 1 + RETURN_BUFFER_DAYS = now+11+9+1 = now+21
-        $this->assertSame(now()->addDays(21)->toDateString(), $createdRental->return_date->toDateString());
+        // return_date = event + totalDays - 1 + RETURN_BUFFER_DAYS = now+11+4+1 = now+16
+        $this->assertSame(now()->addDays(16)->toDateString(), $createdRental->return_date->toDateString());
         $this->assertSame($totalDays, $createdRental->rental_duration_days);
         $this->assertSame($sessions, $createdRental->sessions_count);
-        $this->assertSame((float) $costume->rental_price * $totalDays, (float) $createdRental->total_price);
+        $this->assertSame((float) $costume->rental_price, (float) $createdRental->total_price);
+        $this->assertNotNull($createdRental->identity_card);
         $this->assertSame('Midtrans Snap', $createdRental->payment->payment_type);
     }
 

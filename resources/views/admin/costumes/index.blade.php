@@ -41,7 +41,7 @@
                         <input type="number" name="stock" min="0" class="form-control" value="{{ old('stock', $editingCostume->stock ?? 0) }}" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Harga Sewa</label>
+                        <label class="form-label">Harga Sewa (Per Sesi)</label>
                         <input type="number" name="rental_price" min="0" class="form-control" value="{{ old('rental_price', $editingCostume->rental_price ?? 0) }}" required>
                     </div>
 
@@ -118,7 +118,7 @@
                                 <th>Kategori</th>
                                 <th>Stok</th>
                                 <th>Terbooking</th>
-                                <th>Harga</th>
+                                <th>Harga / Sesi</th>
                                 <th>Img</th>
                                 <th>Status</th>
                                 <th></th>

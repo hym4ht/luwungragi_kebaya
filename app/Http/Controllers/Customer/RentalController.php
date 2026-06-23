@@ -26,7 +26,7 @@ class RentalController extends Controller
         $validated = $request->validate([
             'costume_id' => ['required', 'exists:costumes,id'],
             'event_date' => ['required', 'date', 'after_or_equal:' . now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
-            'sessions'   => ['required', 'integer', 'min:' . Rental::MIN_SESSIONS],
+            'sessions'   => ['required', 'integer', 'in:1'],
             'quantity'   => ['required', 'integer', 'min:1'],
         ]);
 

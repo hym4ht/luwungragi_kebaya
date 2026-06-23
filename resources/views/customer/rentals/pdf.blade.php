@@ -255,7 +255,7 @@
         <tr>
             <th style="text-align: left; width: 45%;">Nama Busana</th>
             <th class="text-center" style="width: 10%;">Qty</th>
-            <th class="text-right" style="width: 20%;">Harga/Hari</th>
+            <th class="text-right" style="width: 20%;">Harga/Sesi</th>
             <th class="text-right" style="width: 25%;">Subtotal</th>
         </tr>
     </thead>
@@ -265,13 +265,13 @@
             <td>{{ $detail->costume->name }}</td>
             <td class="text-center">{{ $detail->quantity }}</td>
             <td class="text-right">Rp{{ number_format((float) $detail->unit_price, 0, ',', '.') }}</td>
-            <td class="text-right">Rp{{ number_format((float) $detail->unit_price * $detail->quantity * $rental->rental_duration_days, 0, ',', '.') }}</td>
+            <td class="text-right">Rp{{ number_format((float) $detail->unit_price * $detail->quantity * $rental->sessions_count, 0, ',', '.') }}</td>
         </tr>
         @endforeach
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="3" class="text-right" style="font-size: 8.5pt; color: #79665e;">Total Bayar ({{ $rental->rental_duration_days }} hari):</td>
+            <td colspan="3" class="text-right" style="font-size: 8.5pt; color: #79665e;">Total Bayar ({{ $rental->sessions_count }} Sesi):</td>
             <td class="text-right">Rp{{ number_format((float) $rental->total_price, 0, ',', '.') }}</td>
         </tr>
     </tfoot>

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RentalController as AdminRentalController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\DashboardController as CustomerOrdersController;
 use App\Http\Controllers\Customer\RentalController as CustomerRentalController;
 use App\Http\Controllers\HomeController;
@@ -39,6 +40,11 @@ Route::middleware('jwt.auth')->group(function (): void {
 
     Route::prefix('customer')->name('customer.')->middleware('role:customer')->group(function (): void {
         Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders');
+
+        // Checkout: GET = tampil summary + form KTP, POST = simpan rental
+        Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
         Route::post('/rentals', [CustomerRentalController::class, 'store'])->name('rentals.store');
         Route::get('/rentals/{rental}', [CustomerRentalController::class, 'show'])->name('rentals.show');
         Route::get('/rentals/{rental}/pdf', [CustomerRentalController::class, 'downloadPdf'])->name('rentals.pdf');

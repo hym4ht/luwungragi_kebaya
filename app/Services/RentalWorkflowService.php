@@ -24,11 +24,12 @@ class RentalWorkflowService
             $sessions   = max(Rental::MIN_SESSIONS, (int) ($payload['sessions'] ?? Rental::MIN_SESSIONS));
             $schedule   = Rental::scheduleFromEventDate($eventDate, $sessions);
             $quantity   = (int) $payload['quantity'];
-            $totalPrice = $schedule['rental_days'] * $quantity * (float) $costume->rental_price;
+            $totalPrice = $sessions * $quantity * (float) $costume->rental_price;
 
             $rental = Rental::query()->create([
                 'user_id'        => $user->id,
                 'invoice_number' => $this->generateInvoiceNumber(),
+                'identity_card'  => $payload['identity_card'] ?? null,
                 'event_date'     => $schedule['event_date']->toDateString(),
                 'rental_date'    => $schedule['booking_start_date']->toDateString(),
                 'return_date'    => $schedule['return_date']->toDateString(),

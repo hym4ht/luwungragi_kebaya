@@ -8,9 +8,7 @@
     }
 
     .invoice-wrap {
-        background: var(--bg-cream);
-        min-height: 100vh;
-        padding: 2.5rem 0;
+        padding: 1.5rem 0;
         font-family: 'Montserrat', sans-serif;
     }
 
@@ -56,6 +54,8 @@
         padding: 1.75rem;
         margin-bottom: 1.25rem;
         border: 1px solid rgba(88,13,33,0.08);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(78, 43, 26, 0.04);
     }
 
     .panel-title {
@@ -286,8 +286,8 @@
                             <tr>
                                 <th>Nama Busana</th>
                                 <th style="text-align:center">Qty</th>
-                                <th style="text-align:right">Harga/hari</th>
-                                <th style="text-align:right">Subtotal ({{ $rental->rental_duration_days }} hari)</th>
+                                <th style="text-align:right">Harga/Sesi</th>
+                                <th style="text-align:right">Subtotal ({{ $rental->sessions_count }} Sesi)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -296,7 +296,7 @@
                                     <td>{{ $detail->costume->name }}</td>
                                     <td style="text-align:center">{{ $detail->quantity }}</td>
                                     <td style="text-align:right">Rp{{ number_format((float) $detail->unit_price, 0, ',', '.') }}</td>
-                                    <td style="text-align:right">Rp{{ number_format((float) $detail->unit_price * $detail->quantity * $rental->rental_duration_days, 0, ',', '.') }}</td>
+                                    <td style="text-align:right">Rp{{ number_format((float) $detail->unit_price * $detail->quantity * $rental->sessions_count, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

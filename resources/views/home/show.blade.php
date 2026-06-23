@@ -478,7 +478,7 @@
                 <h1 class="product-title">{{ $costume->name }}</h1>
                 
                 <div class="price-wrap">
-                    <div class="price">IDR {{ number_format((float)$costume->rental_price, 0, ',', '.') }} <span>/ hari &middot; 1 sesi = {{ \App\Models\Rental::SESSION_DAYS }} hari</span></div>
+                    <div class="price">IDR {{ number_format((float)$costume->rental_price, 0, ',', '.') }} <span>/ sesi ({{ \App\Models\Rental::SESSION_DAYS }} hari)</span></div>
                     <div class="rating">
                         <span style="color: #d4af37;">★</span> 4.9 (128 Reviews)
                     </div>
@@ -529,10 +529,10 @@
                 @endguest
 
                 @auth
-                <form id="bookingForm" action="{{ route('customer.rentals.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+                <form id="bookingForm" action="{{ route('customer.checkout.show') }}" method="GET">
                     <input type="hidden" name="costume_id" value="{{ $costume->id }}">
                     <input type="hidden" name="quantity" id="quantityInput" value="1">
+                    <input type="hidden" name="sessions" id="sessions" value="1">
                     
                     <div class="rental-box">
                         <!-- Date Row -->
@@ -550,14 +550,10 @@
                                 >
                             </div>
                             <div class="date-col">
-                                <label class="date-label" for="sessions">JUMLAH SESI</label>
-                                <select name="sessions" id="sessions" class="date-input" required>
-                                    @for ($s = \App\Models\Rental::MIN_SESSIONS; $s <= 4; $s++)
-                                        <option value="{{ $s }}" @selected((int) old('sessions', 1) === $s)>
-                                            {{ $s }} Sesi ({{ $s * \App\Models\Rental::SESSION_DAYS }} hari)
-                                        </option>
-                                    @endfor
-                                </select>
+                                <label class="date-label">JUMLAH SESI</label>
+                                <div class="date-input mt-1" style="border-bottom: none; font-size: 0.8rem; font-weight: 600;">
+                                    1 Sesi ({{ \App\Models\Rental::SESSION_DAYS }} hari)
+                                </div>
                             </div>
                         </div>
 
@@ -573,14 +569,14 @@
 
                         <!-- Price Summary -->
                         <div class="fee-row">
-                            <span>Harga per hari × qty × <span id="days_display">{{ \App\Models\Rental::SESSION_DAYS }}</span> hari</span>
+                            <span>Harga per sesi × qty</span>
                             <span>IDR <span id="base_price_display">{{ number_format((float)$costume->rental_price, 0, ',', '.') }}</span></span>
                         </div>
                         <div class="total-row">
                             <span>Total</span>
-                            <span>IDR <span id="total_price_display">{{ number_format((float) $costume->rental_price * \App\Models\Rental::SESSION_DAYS, 0, ',', '.') }}</span></span>
+                            <span>IDR <span id="total_price_display">{{ number_format((float) $costume->rental_price, 0, ',', '.') }}</span></span>
                         </div>
-                        <div class="fee-row">
+                        <div class="fee-row mt-2">
                             <span>Alur otomatis</span>
                             <span id="schedule_preview">Order H-3 · Lunas H-2 · Ambil H-1 · Kembali H+{{ \App\Models\Rental::SESSION_DAYS }}</span>
                         </div>
@@ -591,7 +587,7 @@
                     </div>
 
                     <button type="submit" id="btnBook" class="btn-book" {{ $costume->stock < 1 ? 'disabled' : '' }}>
-                        {{ $costume->stock < 1 ? 'HABIS DISEWA' : 'BOOKING SEKARANG →' }}
+                        {{ $costume->stock < 1 ? 'HABIS DISEWA' : 'LANJUT KE CHECKOUT →' }}
                     </button>
                 </form>
                 @endauth
@@ -717,9 +713,27 @@
 
     function calculateTotal() {
         const sessions  = getSessions();
-        const total     = basePrice * qty * sessions * sessionDays;
+        const total     = basePrice * qty * sessions;
         if (totalDisplay) totalDisplay.textContent = total.toLocaleString('id-ID');
         updateSchedulePreview();
+    }
+
+    function previewIdentityCard(input) {
+        const preview = document.getElementById('identityPreview');
+        const label = document.getElementById('uploadLabel');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                label.style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.src = '';
+            preview.style.display = 'none';
+            label.style.display = 'block';
+        }
     }
 
     eventInput?.addEventListener('change', calculateTotal);
