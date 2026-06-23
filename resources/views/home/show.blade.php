@@ -718,23 +718,6 @@
         updateSchedulePreview();
     }
 
-    function previewIdentityCard(input) {
-        const preview = document.getElementById('identityPreview');
-        const label = document.getElementById('uploadLabel');
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-                label.style.display = 'none';
-            }
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.src = '';
-            preview.style.display = 'none';
-            label.style.display = 'block';
-        }
-    }
 
     eventInput?.addEventListener('change', calculateTotal);
     sessionsInput?.addEventListener('change', calculateTotal);
