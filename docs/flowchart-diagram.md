@@ -1,0 +1,551 @@
+# Flowchart Diagram - Sistem Rental Kostum Luwungragi
+
+## 1. User Authentication Flow
+
+```
+┌─────────────────┐
+│  START: Access  │
+│     System      │
+└────────┬────────┘
+         │
+         ▼
+    ┌─────────┐
+    │ Has JWT │
+    │ Token?  │
+    └────┬────┘
+         │
+    ┌────┴────┐
+    │         │
+   YES       NO
+    │         │
+    │         ▼
+    │    ┌──────────────┐
+    │    │ Redirect to  │
+    │    │ Login Page   │
+    │    └──────┬───────┘
+    │           │
+    │           ▼
+    │    ┌──────────────┐
+    │    │ Enter Email  │
+    │    │ & Password   │
+    │    └──────┬───────┘
+    │           │
+    │           ▼
+    │    ┌──────────────┐
+    │    │  Validate    │
+    │    │ Credentials  │
+    │    └──────┬───────┘
+    │           │
+    │      ┌────┴────┐
+    │      │         │
+    │    VALID    INVALID
+    │      │         │
+    │      │         ▼
+    │      │    ┌──────────┐
+    │      │    │   Show   │
+    │      │    │  Error   │
+    │      │    └────┬─────┘
+    │      │         │
+    │      │         └──────┐
+    │      │                │
+    │      ▼                │
+    │  ┌──────────────┐     │
+    │  │  Generate    │     │
+    │  │  JWT Token   │     │
+    │  └──────┬───────┘     │
+    │         │             │
+    │         ▼             │
+    │  ┌──────────────┐     │
+    │  │  Set Cookie  │     │
+    │  └──────┬───────┘     │
+    │         │             │
+    └─────────┴─────────────┘
+              │
+              ▼
+       ┌──────────────┐
+       │ Check User   │
+       │    Role      │
+       └──────┬───────┘
+              │
+       ┌──────┴──────┬──────────┐
+       │             │          │
+    CUSTOMER       ADMIN      OWNER
+       │             │          │
+       ▼             ▼          ▼
+  ┌─────────┐  ┌─────────┐  ┌─────────┐
+  │Customer │  │  Admin  │  │  Owner  │
+  │Dashboard│  │Dashboard│  │Dashboard│
+  └─────────┘  └─────────┘  └─────────┘
+       │             │          │
+       └─────────────┴──────────┘
+                     │
+                     ▼
+                 ┌────────┐
+                 │  END   │
+                 └────────┘
+```
+
+## 2. Customer Booking Flow
+
+```
+┌──────────────────┐
+│ START: Customer  │
+│ Browse Catalog   │
+└────────┬─────────┘
+         │
+         ▼
+    ┌─────────────┐
+    │   Select    │
+    │   Costume   │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │    Fill     │
+    │ Booking Form│
+    │ - Event Date│
+    │ - Duration  │
+    │ - Quantity  │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │   Submit    │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │ Event Date  │
+    │ >= Today+3? │
+    └──────┬──────┘
+           │
+      ┌────┴────┐
+      │         │
+     YES       NO
+      │         │
+      │         ▼
+      │    ┌─────────┐
+      │    │  Error: │
+      │    │Min H-3  │
+      │    └────┬────┘
+      │         │
+      │         └──────┐
+      │                │
+      ▼                │
+ ┌─────────────┐       │
+ │Check Stock  │       │
+ │Availability │       │
+ └──────┬──────┘       │
+        │              │
+   ┌────┴────┐         │
+   │         │         │
+ AVAIL   NOT AVAIL     │
+   │         │         │
+   │         ▼         │
+   │    ┌─────────┐    │
+   │    │  Error: │    │
+   │    │No Stock │    │
+   │    └────┬────┘    │
+   │         │         │
+   │         └─────────┤
+   │                   │
+   ▼                   │
+┌─────────────┐        │
+│  Calculate  │        │
+│  Schedule   │        │
+│- Booking    │        │
+│- Payment Due│        │
+│- Pickup     │        │
+│- Return     │        │
+└──────┬──────┘        │
+       │               │
+       ▼               │
+┌─────────────┐        │
+│   Create    │        │
+│   Rental    │        │
+│(status:     │        │
+│ pending)    │        │
+└──────┬──────┘        │
+       │               │
+       ▼               │
+┌─────────────┐        │
+│   Create    │        │
+│   Payment   │        │
+│(status:     │        │
+│ pending)    │        │
+└──────┬──────┘        │
+       │               │
+       ▼               │
+┌─────────────┐        │
+│  Redirect   │        │
+│  to Rental  │        │
+│   Details   │        │
+└──────┬──────┘        │
+       │               │
+       └───────────────┘
+                       │
+                       ▼
+                   ┌────────┐
+                   │  END   │
+                   └────────┘
+```
+
+## 3. Payment Processing Flow
+
+```
+┌──────────────────┐
+│ START: Customer  │
+│  on Rental Page  │
+└────────┬─────────┘
+         │
+         ▼
+    ┌─────────────┐
+    │   Payment   │
+    │   Status?   │
+    └──────┬──────┘
+           │
+    ┌──────┴──────┬──────────┐
+    │             │          │
+ PENDING    SETTLEMENT   EXPIRE/CANCEL
+    │             │          │
+    │             ▼          ▼
+    │      ┌──────────┐  ┌──────────┐
+    │      │  Show    │  │  Show    │
+    │      │ Success  │  │  Failed  │
+    │      └────┬─────┘  └────┬─────┘
+    │           │             │
+    │           └─────┬───────┘
+    │                 │
+    │                 ▼
+    │             ┌────────┐
+    │             │  END   │
+    │             └────────┘
+    │
+    ▼
+┌─────────────┐
+│ Click Pay   │
+│   Button    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Generate   │
+│   Midtrans  │
+│ Snap Token  │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│    Open     │
+│  Midtrans   │
+│Payment Page │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│   Choose    │
+│   Payment   │
+│   Method    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Complete   │
+│   Payment   │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Midtrans   │
+│  Process    │
+└──────┬──────┘
+       │
+  ┌────┴────┐
+  │         │
+SUCCESS   FAILED
+  │         │
+  │         ▼
+  │    ┌─────────┐
+  │    │Customer │
+  │    │Can Retry│
+  │    └────┬────┘
+  │         │
+  │         └──────┐
+  │                │
+  ▼                │
+┌─────────────┐    │
+│  Midtrans   │    │
+│Send Webhook │    │
+└──────┬──────┘    │
+       │           │
+       ▼           │
+┌─────────────┐    │
+│   Verify    │    │
+│  Signature  │    │
+└──────┬──────┘    │
+       │           │
+  ┌────┴────┐      │
+  │         │      │
+ VALID   INVALID   │
+  │         │      │
+  │         ▼      │
+  │    ┌─────────┐ │
+  │    │ Reject  │ │
+  │    │HTTP 403 │ │
+  │    └────┬────┘ │
+  │         │      │
+  │         └──────┤
+  │                │
+  ▼                │
+┌─────────────┐    │
+│   Update    │    │
+│   Payment   │    │
+│   Status    │    │
+│(settlement) │    │
+└──────┬──────┘    │
+       │           │
+       ▼           │
+┌─────────────┐    │
+│   Notify    │    │
+│  Customer   │    │
+└──────┬──────┘    │
+       │           │
+       └───────────┘
+                   │
+                   ▼
+               ┌────────┐
+               │  END   │
+               └────────┘
+```
+
+## 4. Admin Rental Management Flow
+
+```
+┌──────────────────┐
+│ START: Admin     │
+│ Access Rentals   │
+└────────┬─────────┘
+         │
+         ▼
+    ┌─────────────┐
+    │    View     │
+    │  All Rentals│
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │   Select    │
+    │   Action    │
+    └──────┬──────┘
+           │
+    ┌──────┴──────┬──────────┬──────────┐
+    │             │          │          │
+  FILTER      VIEW      UPDATE     RECORD
+  RENTALS    DETAILS    STATUS     RETURN
+    │             │          │          │
+    ▼             ▼          ▼          ▼
+┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
+│  Apply  │ │  Show   │ │ Current │ │  Enter  │
+│ Filters │ │Complete │ │ Status? │ │ Return  │
+│- Status │ │ Rental  │ └────┬────┘ │  Info   │
+│- Payment│ │  Info   │      │      │- Date   │
+│- Search │ └────┬────┘      │      │- Damage │
+└────┬────┘      │      ┌────┴────┐ │  Fee    │
+     │           │      │         │ └────┬────┘
+     │           │   PENDING   ACTIVE    │
+     │           │      │         │      │
+     │           │      ▼         ▼      ▼
+     │           │  ┌────────┐ ┌────────┐ ┌────────┐
+     │           │  │Change  │ │Change  │ │Calculate│
+     │           │  │  to    │ │  to    │ │  Late   │
+     │           │  │Active/ │ │Complete│ │  Fee    │
+     │           │  │Cancel  │ │/Cancel │ │15k/day  │
+     │           │  └───┬────┘ └───┬────┘ └────┬────┘
+     │           │      │          │           │
+     │           │      ▼          ▼           ▼
+     │           │  ┌────────────────────┐ ┌────────┐
+     │           │  │  Update Status in  │ │ Create │
+     │           │  │     Database       │ │ Return │
+     │           │  └─────────┬──────────┘ │ Record │
+     │           │            │            └────┬────┘
+     │           │            │                 │
+     │           │            ▼                 ▼
+     │           │      ┌──────────┐      ┌──────────┐
+     │           │      │  Show    │      │  Update  │
+     │           │      │ Success  │      │  Rental  │
+     │           │      └────┬─────┘      │  Status  │
+     │           │           │            │(complete)│
+     │           │           │            └────┬─────┘
+     │           │           │                 │
+     └───────────┴───────────┴─────────────────┘
+                             │
+                             ▼
+                      ┌──────────┐
+                      │Continue  │
+                      │or Logout?│
+                      └────┬─────┘
+                           │
+                      ┌────┴────┐
+                      │         │
+                  CONTINUE   LOGOUT
+                      │         │
+                      │         ▼
+                      │     ┌────────┐
+                      │     │  END   │
+                      │     └────────┘
+                      │
+                      └──────┐
+                             │
+                             ▼
+                      ┌──────────┐
+                      │  Back to │
+                      │  Rentals │
+                      │   List   │
+                      └──────────┘
+```
+
+## 5. Rental Status Lifecycle
+
+```
+┌──────────────┐
+│   CREATED    │
+│   (Pending)  │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│   Customer   │
+│Makes Payment │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐      ┌──────────────┐
+│   Payment    │─YES─▶│    Admin     │
+│  Confirmed?  │      │  Activates   │
+└──────┬───────┘      │    Rental    │
+       │              └──────┬───────┘
+       NO                    │
+       │                     ▼
+       ▼              ┌──────────────┐
+┌──────────────┐      │    ACTIVE    │
+│   Expired/   │      │  (Customer   │
+│  Cancelled   │      │ Picks Up &   │
+└──────┬───────┘      │    Uses)     │
+       │              └──────┬───────┘
+       │                     │
+       │                     ▼
+       │              ┌──────────────┐
+       │              │   Customer   │
+       │              │   Returns    │
+       │              │   Costume    │
+       │              └──────┬───────┘
+       │                     │
+       │                     ▼
+       │              ┌──────────────┐
+       │              │    Admin     │
+       │              │   Records    │
+       │              │    Return    │
+       │              └──────┬───────┘
+       │                     │
+       │                     ▼
+       │              ┌──────────────┐
+       │              │  COMPLETED   │
+       │              └──────────────┘
+       │                     │
+       └─────────────────────┘
+                             │
+                             ▼
+                         ┌────────┐
+                         │  END   │
+                         └────────┘
+
+Note: Any status can transition to CANCELLED at any time by Admin
+```
+
+## 6. Stock Availability Check Flow
+
+```
+┌──────────────────┐
+│ START: Customer  │
+│  Select Costume  │
+│  & Date Range    │
+└────────┬─────────┘
+         │
+         ▼
+    ┌─────────────┐
+    │  Calculate  │
+    │Date Range:  │
+    │Event Date - │
+    │  3 days to  │
+    │Return Date  │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │Query Active │
+    │  Rentals    │
+    │ Overlapping │
+    │ Date Range  │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │  Calculate  │
+    │   Reserved  │
+    │   Quantity  │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │  Available  │
+    │   Stock =   │
+    │Total Stock -│
+    │  Reserved   │
+    └──────┬──────┘
+           │
+           ▼
+    ┌─────────────┐
+    │  Available  │
+    │   Stock >=  │
+    │  Requested  │
+    │  Quantity?  │
+    └──────┬──────┘
+           │
+      ┌────┴────┐
+      │         │
+     YES       NO
+      │         │
+      ▼         ▼
+┌──────────┐ ┌──────────┐
+│  Allow   │ │  Reject  │
+│ Booking  │ │ Booking  │
+└────┬─────┘ └────┬─────┘
+     │            │
+     └────────────┘
+                  │
+                  ▼
+              ┌────────┐
+              │  END   │
+              └────────┘
+```
+
+## Key Timing Rules Summary
+
+```
+Timeline for Event Date = X:
+
+Day X-3: Booking Start (earliest booking allowed)
+Day X-2: Payment Due (latest payment time)
+Day X-1: Pickup Date (customer picks up offline)
+Day X:   Event Date (usage starts)
+Day X+N: Usage End (N = rental_days - 1)
+Day X+N+1: Return Due Date
+Day X+N+2+: Late Return (Rp 15.000/day penalty)
+
+Constraints:
+- Rental Duration: 1-5 days
+- Booking Buffer: 3 days minimum
+- Payment Buffer: 2 days before event
+- Pickup Buffer: 1 day before event
+- Return Buffer: 1 day after usage end
+```

@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: luwungragi:latest
+    container_name: luwungragi_app
+    restart: unless-stopped
+    working_dir: /var/www
+    env_file:
+      - .env
+    environment:
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      RUN_OPTIMIZE: ${RUN_OPTIMIZE:-true}
+      MIGRATION_MAX_ATTEMPTS: ${MIGRATION_MAX_ATTEMPTS:-12}
+      MIGRATION_RETRY_DELAY: ${MIGRATION_RETRY_DELAY:-5}
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - luwungragi_storage:/var/www/storage
+    networks:
+      - web_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    mem_limit: 512m
+
+volumes:
+  luwungragi_storage:
+
+networks:
+  web_network:
+    name: ${DOCKER_WEB_NETWORK:-web_network}
+    external: ${DOCKER_USE_EXTERNAL_NETWORK:-false}
