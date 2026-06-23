@@ -138,7 +138,7 @@ class RentalSeeder extends Seeder
         $usageDate    = now()->subDays(max($daysAgo - Rental::BOOKING_BUFFER_DAYS, 0))->startOfDay();
         $schedule     = Rental::scheduleFromEventDate($usageDate);
         $costumesList = collect($costumes);
-        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
+        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -184,10 +184,9 @@ class RentalSeeder extends Seeder
     ): void {
         $costumesList = collect($costumes);
         $returnDate   = now()->addDays($returnInDays)->startOfDay();
-        // usage_date = return_date - RETURN_BUFFER_DAYS - (SESSION_DAYS - 1)
-        $usageDate    = $returnDate->copy()->subDays(Rental::SESSION_DAYS - 1 + Rental::RETURN_BUFFER_DAYS);
+        $usageDate    = $returnDate->copy()->subDays(1);
         $schedule     = Rental::scheduleFromEventDate($usageDate);
-        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
+        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -226,7 +225,7 @@ class RentalSeeder extends Seeder
         $bookingStartDate = now()->addDays($startInDays)->startOfDay();
         $usageDate        = $bookingStartDate->copy()->addDays(Rental::BOOKING_BUFFER_DAYS);
         $schedule         = Rental::scheduleFromEventDate($usageDate);
-        $totalPrice       = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
+        $totalPrice       = $costumesList->sum(fn ($c) => (float) $c->rental_price);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,
@@ -266,7 +265,7 @@ class RentalSeeder extends Seeder
         $costumesList = collect($costumes);
         $usageDate    = now()->addDays(Rental::BOOKING_BUFFER_DAYS)->startOfDay();
         $schedule     = Rental::scheduleFromEventDate($usageDate);
-        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price * Rental::SESSION_DAYS);
+        $totalPrice   = $costumesList->sum(fn ($c) => (float) $c->rental_price);
 
         $rental = Rental::query()->create([
             'user_id'        => $customer->id,

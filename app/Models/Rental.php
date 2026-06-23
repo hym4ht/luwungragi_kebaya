@@ -89,7 +89,6 @@ class Rental extends Model
     public static function scheduleFromEventDate(Carbon|string $eventDate, int $sessions = self::MIN_SESSIONS): array
     {
         $sessions  = max(self::MIN_SESSIONS, $sessions);
-        $totalDays = $sessions * self::SESSION_DAYS;
 
         $usageDate = $eventDate instanceof Carbon
             ? $eventDate->copy()->startOfDay()
@@ -98,8 +97,10 @@ class Rental extends Model
         $bookingStartDate = $usageDate->copy()->subDays(self::BOOKING_BUFFER_DAYS);
         $paymentDueDate   = $usageDate->copy()->subDays(self::PAYMENT_BUFFER_DAYS);
         $pickupDate       = $usageDate->copy()->subDays(self::PICKUP_BUFFER_DAYS);
-        $usageEndDate     = $usageDate->copy()->addDays($totalDays - 1);
-        $returnDate       = $usageEndDate->copy()->addDays(self::RETURN_BUFFER_DAYS);
+        
+        $totalProcessDays = $sessions * self::SESSION_DAYS;
+        $returnDate       = $bookingStartDate->copy()->addDays($totalProcessDays - 1);
+        $usageEndDate     = $returnDate->copy()->subDays(self::RETURN_BUFFER_DAYS);
 
         return [
             'event_date'            => $usageDate,
@@ -109,8 +110,8 @@ class Rental extends Model
             'payment_due_date'      => $paymentDueDate,
             'return_date'           => $returnDate,
             'sessions'              => $sessions,
-            'rental_days'           => $totalDays,
-            'process_duration_days' => max($bookingStartDate->diffInDays($returnDate), 0) + 1,
+            'rental_days'           => $totalProcessDays,
+            'process_duration_days' => $totalProcessDays,
         ];
     }
 
@@ -145,30 +146,23 @@ class Rental extends Model
 
     public function getReturnDueDateAttribute(): Carbon
     {
-        return ($this->return_date?->copy() ?? $this->usage_date->copy()->addDays(self::SESSION_DAYS - 1 + self::RETURN_BUFFER_DAYS))
+        return ($this->return_date?->copy() ?? $this->booking_start_date->copy()->addDays(self::SESSION_DAYS - 1))
             ->startOfDay();
-    }
-
-    /**
-     * Total hari pakai (dihitung dari tanggal tersimpan di DB).
-     * = usage_end_date - usage_date + 1
-     */
-    public function getRentalDurationDaysAttribute(): int
-    {
-        return max((int) $this->usage_date->diffInDays($this->usage_end_date) + 1, self::SESSION_DAYS);
-    }
-
-    /**
-     * Jumlah sesi (dihitung dari total hari pakai / SESSION_DAYS).
-     */
-    public function getSessionsCountAttribute(): int
-    {
-        return (int) round($this->rental_duration_days / self::SESSION_DAYS);
     }
 
     public function getProcessDurationDaysAttribute(): int
     {
         return max($this->booking_start_date->diffInDays($this->return_due_date), 0) + 1;
+    }
+
+    public function getRentalDurationDaysAttribute(): int
+    {
+        return $this->process_duration_days;
+    }
+
+    public function getSessionsCountAttribute(): int
+    {
+        return (int) round($this->process_duration_days / self::SESSION_DAYS);
     }
 
     /** Hitung hari keterlambatan dari tanggal pengembalian aktual. */

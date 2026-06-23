@@ -140,7 +140,7 @@ class LuwungragiFeatureTest extends TestCase
         $this->assertSame(now()->addDays(8)->toDateString(), $createdRental->rental_date->toDateString());
         $this->assertSame(now()->addDays(9)->toDateString(), $createdRental->payment_due_date->toDateString());
         $this->assertSame(now()->addDays(10)->toDateString(), $createdRental->pickup_date->toDateString());
-        $this->assertSame(now()->addDays(16)->toDateString(), $createdRental->return_date->toDateString());
+        $this->assertSame(now()->addDays(12)->toDateString(), $createdRental->return_date->toDateString());
         $this->assertSame($totalDays, $createdRental->rental_duration_days);
         $this->assertSame($sessions, $createdRental->sessions_count);
         $this->assertSame((float) $costume->rental_price, (float) $createdRental->total_price);

@@ -37,7 +37,7 @@ class MidtransService
     {
         $this->assertSnapConfiguration();
 
-        $duration = max($rental->rental_duration_days, 1);
+        $sessions = max($rental->sessions_count, 1);
 
         $params = [
             'transaction_details' => [
@@ -48,11 +48,11 @@ class MidtransService
                 'first_name' => $user->name,
                 'email'      => $user->email,
             ],
-            'item_details' => $rental->details->map(function ($detail) use ($duration) {
+            'item_details' => $rental->details->map(function ($detail) use ($sessions) {
                 return [
                     'id'       => (string) $detail->costume_id,
                     'price'    => (int) $detail->unit_price,
-                    'quantity' => $detail->quantity * $duration,
+                    'quantity' => $detail->quantity * $sessions,
                     'name'     => $detail->costume->name,
                 ];
             })->toArray(),
