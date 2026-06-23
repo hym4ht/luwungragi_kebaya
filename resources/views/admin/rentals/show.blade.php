@@ -22,18 +22,6 @@
                     </div>
                 </div>
 
-                @if($rental->identity_card)
-                    <div class="mb-4 p-3 bg-light rounded border">
-                        <div class="small text-muted fw-semibold mb-2">Jaminan Identitas Diri (KTP/SIM/Kartu Pelajar)</div>
-                        <div>
-                            <a href="{{ asset('storage/' . $rental->identity_card) }}" target="_blank">
-                                <img src="{{ asset('storage/' . $rental->identity_card) }}" alt="Identitas Diri" class="img-fluid rounded border shadow-sm" style="max-height: 150px; object-fit: contain;">
-                            </a>
-                            <div class="form-text mt-1">Klik gambar untuk melihat ukuran penuh.</div>
-                        </div>
-                    </div>
-                @endif
-
                 <div class="table-responsive mb-3">
                     <table class="table align-middle">
                         <thead class="table-light">

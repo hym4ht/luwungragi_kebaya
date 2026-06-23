@@ -39,7 +39,6 @@ class Rental extends Model
     protected $fillable = [
         'user_id',
         'invoice_number',
-        'identity_card',
         'event_date',
         'rental_date',
         'return_date',

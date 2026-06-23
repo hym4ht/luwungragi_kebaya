@@ -65,11 +65,10 @@ class CheckoutController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'costume_id'    => ['required', 'exists:costumes,id'],
-            'event_date'    => ['required', 'date', 'after_or_equal:' . now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
-            'sessions'      => ['required', 'integer', 'in:1'],
-            'quantity'      => ['required', 'integer', 'min:1'],
-            'identity_card' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'costume_id' => ['required', 'exists:costumes,id'],
+            'event_date' => ['required', 'date', 'after_or_equal:' . now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
+            'sessions'   => ['required', 'integer', 'in:1'],
+            'quantity'   => ['required', 'integer', 'min:1'],
         ]);
 
         $costume  = Costume::query()->findOrFail($validated['costume_id']);
@@ -85,12 +84,10 @@ class CheckoutController extends Controller
                 ->withErrors(['quantity' => 'Stok tidak mencukupi untuk tanggal yang dipilih.']);
         }
 
-        $validated['identity_card'] = $request->file('identity_card')->store('identity_cards', 'public');
-
         $rental = $this->rentalWorkflowService->createBooking($request->user(), $costume, $validated);
 
         return redirect()
             ->route('customer.rentals.show', $rental)
-            ->with('success', 'Pemesanan berhasil! Lakukan pelunasan maksimal H-2 dan pengambilan kostum offline H-1. Jangan lupa bawa identitas asli saat pengambilan.');
+            ->with('success', 'Pemesanan berhasil! Lakukan pelunasan maksimal H-2 dan pengambilan kostum offline H-1. Jangan lupa bawa identitas asli (KTP/SIM/Kartu Pelajar) saat pengambilan.');
     }
 }
