@@ -26,7 +26,7 @@ class CheckoutController extends Controller
     {
         $validated = $request->validate([
             'costume_id' => ['required', 'exists:costumes,id'],
-            'event_date' => ['required', 'date', 'after_or_equal:' . now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
+            'event_date' => ['required', 'date', 'after_or_equal:' . now()->startOfDay()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
             'sessions'   => ['required', 'integer', 'in:1'],
             'quantity'   => ['required', 'integer', 'min:1'],
         ]);
@@ -66,7 +66,7 @@ class CheckoutController extends Controller
     {
         $validated = $request->validate([
             'costume_id' => ['required', 'exists:costumes,id'],
-            'event_date' => ['required', 'date', 'after_or_equal:' . now()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
+            'event_date' => ['required', 'date', 'after_or_equal:' . now()->startOfDay()->addDays(Rental::BOOKING_BUFFER_DAYS)->toDateString()],
             'sessions'   => ['required', 'integer', 'in:1'],
             'quantity'   => ['required', 'integer', 'min:1'],
         ]);
