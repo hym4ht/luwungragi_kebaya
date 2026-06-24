@@ -544,8 +544,8 @@
                                     name="event_date"
                                     id="event_date"
                                     class="date-input"
-                                    value="{{ old('event_date', now()->addDays(\App\Models\Rental::BOOKING_BUFFER_DAYS)->toDateString()) }}"
-                                    min="{{ now()->addDays(\App\Models\Rental::BOOKING_BUFFER_DAYS)->toDateString() }}"
+                                    value="{{ old('event_date', now()->toDateString()) }}"
+                                    min="{{ now()->toDateString() }}"
                                     required
                                 >
                             </div>
@@ -681,23 +681,23 @@
     function updateSchedulePreview() {
         if (!eventInput || !schedulePreview || !eventInput.value) return;
 
-        const eventDate = new Date(eventInput.value + 'T00:00:00');
-        if (isNaN(eventDate)) {
-            schedulePreview.textContent = 'Order H-3 · Lunas H-2 · Ambil H-1 · Kembali H+{{ \App\Models\Rental::SESSION_DAYS }}';
+        const bookingDate = new Date(eventInput.value + 'T00:00:00');
+        if (isNaN(bookingDate)) {
+            schedulePreview.textContent = 'Mulai · +1 Lunas · +2 Ambil · +3 Acara · Kembali H+{{ \App\Models\Rental::SESSION_DAYS - 1 }}';
             return;
         }
 
-        const sessions   = getSessions();
-        const totalDays  = sessions * sessionDays;
+        const sessions  = getSessions();
+        const totalDays = sessions * sessionDays;
 
-        const bookingDate = new Date(eventDate);
-        bookingDate.setDate(bookingDate.getDate() - {{ \App\Models\Rental::BOOKING_BUFFER_DAYS }});
+        const paymentDate = new Date(bookingDate);
+        paymentDate.setDate(paymentDate.getDate() + ({{ \App\Models\Rental::BOOKING_BUFFER_DAYS }} - {{ \App\Models\Rental::PAYMENT_BUFFER_DAYS }}));
 
-        const paymentDate = new Date(eventDate);
-        paymentDate.setDate(paymentDate.getDate() - {{ \App\Models\Rental::PAYMENT_BUFFER_DAYS }});
+        const pickupDate = new Date(bookingDate);
+        pickupDate.setDate(pickupDate.getDate() + ({{ \App\Models\Rental::BOOKING_BUFFER_DAYS }} - {{ \App\Models\Rental::PICKUP_BUFFER_DAYS }}));
 
-        const pickupDate = new Date(eventDate);
-        pickupDate.setDate(pickupDate.getDate() - {{ \App\Models\Rental::PICKUP_BUFFER_DAYS }});
+        const eventDate = new Date(bookingDate);
+        eventDate.setDate(eventDate.getDate() + {{ \App\Models\Rental::BOOKING_BUFFER_DAYS }});
 
         const returnDate = new Date(bookingDate);
         returnDate.setDate(returnDate.getDate() + totalDays - 1);
@@ -708,7 +708,7 @@
         if (daysDisplay) daysDisplay.textContent = totalDays;
 
         schedulePreview.textContent =
-            `Order ${formatShortDate(bookingDate)} · Lunas max ${formatShortDate(paymentDate)} · Ambil ${formatShortDate(pickupDate)} · Sewa s/d ${formatShortDate(usageEndDate)} · Kembali ${formatShortDate(returnDate)}`;
+            `Mulai ${formatShortDate(bookingDate)} · Lunas max ${formatShortDate(paymentDate)} · Ambil ${formatShortDate(pickupDate)} · Acara ${formatShortDate(eventDate)} · Kembali ${formatShortDate(returnDate)}`;
     }
 
     function calculateTotal() {

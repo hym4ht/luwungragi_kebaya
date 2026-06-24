@@ -17,7 +17,7 @@ class AvailabilityService
     public function getCatalog(?string $eventDate, ?string $keyword = null, ?string $category = null, int $sessions = Rental::MIN_SESSIONS): Collection
     {
         $selectedEventDate = Carbon::parse(
-            $eventDate ?: now()->addDays(Rental::BOOKING_BUFFER_DAYS)
+            $eventDate ?: now()
         )->toDateString();
 
         $schedule  = Rental::scheduleFromEventDate($selectedEventDate, max(Rental::MIN_SESSIONS, $sessions));

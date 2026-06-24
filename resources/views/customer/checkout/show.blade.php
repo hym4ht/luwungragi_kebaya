@@ -339,11 +339,11 @@
                     <div class="schedule-grid">
                         <div class="schedule-item">
                             <div class="schedule-item__label">Mulai Sewa</div>
-                            <div class="schedule-item__value">{{ $schedule['event_date']->format('d M Y') }}</div>
+                            <div class="schedule-item__value">{{ $schedule['booking_start_date']->format('d M Y') }}</div>
                         </div>
                         <div class="schedule-item">
-                            <div class="schedule-item__label">Selesai Sewa</div>
-                            <div class="schedule-item__value">{{ $schedule['usage_end_date']->format('d M Y') }}</div>
+                            <div class="schedule-item__label">Hari Acara</div>
+                            <div class="schedule-item__value">{{ $schedule['event_date']->format('d M Y') }}</div>
                         </div>
                         <div class="schedule-item">
                             <div class="schedule-item__label">Ambil Offline</div>

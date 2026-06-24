@@ -751,10 +751,10 @@
                                     </div>
 
                                     <div class="mb-5">
-                                        <span class="filter-label">TANGGAL ACARA</span>
+                                        <span class="filter-label">TANGGAL MULAI SEWA</span>
                                         <input type="date" name="event_date" class="form-control-date"
                                                value="{{ $filters['event_date'] }}"
-                                               min="{{ now()->addDays(\App\Models\Rental::BOOKING_BUFFER_DAYS)->toDateString() }}">
+                                               min="{{ now()->toDateString() }}">
                                     </div>
                                 </div>
 

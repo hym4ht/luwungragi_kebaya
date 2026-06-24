@@ -82,22 +82,25 @@ class Rental extends Model
     // ── Static Schedule Calculator ────────────────────────────────────────────
 
     /**
-     * Hitung semua tanggal jadwal dari event_date dan jumlah sesi.
+     * Hitung semua tanggal jadwal dari tanggal_mulai_sewa (booking_start_date) dan jumlah sesi.
+     * Input = hari pertama sewa (hari yang dipilih user di form).
+     * event_date (hari acara/pemakaian) = booking_start_date + BOOKING_BUFFER_DAYS.
      *
-     * @param  int  $sessions  Jumlah sesi (min 1), total hari = sessions × SESSION_DAYS
+     * @param  Carbon|string  $startDate  Tanggal mulai sewa (hari pertama, dipilih user)
+     * @param  int            $sessions   Jumlah sesi (min 1), total hari = sessions × SESSION_DAYS
      */
-    public static function scheduleFromEventDate(Carbon|string $eventDate, int $sessions = self::MIN_SESSIONS): array
+    public static function scheduleFromEventDate(Carbon|string $startDate, int $sessions = self::MIN_SESSIONS): array
     {
         $sessions  = max(self::MIN_SESSIONS, $sessions);
 
-        $usageDate = $eventDate instanceof Carbon
-            ? $eventDate->copy()->startOfDay()
-            : Carbon::parse($eventDate)->startOfDay();
+        $bookingStartDate = $startDate instanceof Carbon
+            ? $startDate->copy()->startOfDay()
+            : Carbon::parse($startDate)->startOfDay();
 
-        $bookingStartDate = $usageDate->copy()->subDays(self::BOOKING_BUFFER_DAYS);
-        $paymentDueDate   = $usageDate->copy()->subDays(self::PAYMENT_BUFFER_DAYS);
-        $pickupDate       = $usageDate->copy()->subDays(self::PICKUP_BUFFER_DAYS);
-        
+        $usageDate      = $bookingStartDate->copy()->addDays(self::BOOKING_BUFFER_DAYS);
+        $paymentDueDate = $bookingStartDate->copy()->addDays(self::BOOKING_BUFFER_DAYS - self::PAYMENT_BUFFER_DAYS);
+        $pickupDate     = $bookingStartDate->copy()->addDays(self::BOOKING_BUFFER_DAYS - self::PICKUP_BUFFER_DAYS);
+
         $totalProcessDays = $sessions * self::SESSION_DAYS;
         $returnDate       = $bookingStartDate->copy()->addDays($totalProcessDays - 1);
         $usageEndDate     = $returnDate->copy()->subDays(self::RETURN_BUFFER_DAYS);
