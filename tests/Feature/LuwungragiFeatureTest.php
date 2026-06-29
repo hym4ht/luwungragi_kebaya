@@ -113,6 +113,7 @@ class LuwungragiFeatureTest extends TestCase
         $customer  = User::query()->where('email', 'bagas@luwungragi.test')->firstOrFail();
         $costume   = Costume::query()->where('name', 'Kostum Wisuda Nusantara')->firstOrFail();
         $token     = app(JwtService::class)->issueToken($customer);
+        $startDate = now()->addDays(8)->toDateString();
         $eventDate = now()->addDays(Rental::BOOKING_BUFFER_DAYS + 8)->toDateString();
         $sessions  = 1;
 
@@ -120,7 +121,7 @@ class LuwungragiFeatureTest extends TestCase
             ->withCookie(config('jwt.cookie_name'), $token)
             ->post(route('customer.checkout.store'), [
                 'costume_id' => $costume->id,
-                'event_date' => $eventDate,
+                'event_date' => $startDate,
                 'sessions'   => $sessions,
                 'quantity'   => 1,
             ]);

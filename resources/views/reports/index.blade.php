@@ -16,8 +16,38 @@
         <div class="col-md-3">
             <x-stat-card title="Aktif" :value="$report['active_transactions']" tone="blush" class="h-100" />
         </div>
+        <style>
+            #revenueCardDropdown .dropdown-item {
+                transition: all 0.2s ease;
+                cursor: pointer;
+            }
+            #revenueCardDropdown .dropdown-item:hover {
+                background-color: rgba(215, 198, 175, 0.15) !important;
+                color: #580d21 !important;
+            }
+            #revenueCardDropdown .dropdown-item.active {
+                background-color: rgba(215, 198, 175, 0.3) !important;
+                color: #580d21 !important;
+            }
+        </style>
         <div class="col-md-3">
-            <x-stat-card title="Pendapatan" :value="'Rp'.number_format((float) $report['gross_revenue'], 0, ',', '.')" tone="earth" class="h-100" />
+            <x-stat-card title="Pendapatan" tone="earth" class="h-100">
+                <x-slot name="action">
+                    <div class="dropdown" id="revenueCardDropdown">
+                        <button class="btn btn-sm dropdown-toggle border-0 py-0 px-2 fw-semibold" type="button" id="revenueDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.72rem; color: #79665e; background: transparent; box-shadow: none;">
+                            Kotor
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-1" aria-labelledby="revenueDropdown" style="font-size: 0.78rem; min-width: 110px; border-radius: 0.75rem; background: #ffffff; z-index: 1050;">
+                            <li><a class="dropdown-item py-2 px-3 fw-semibold active" href="#" data-value="gross">Kotor</a></li>
+                            <li><a class="dropdown-item py-2 px-3 fw-semibold text-muted" href="#" data-value="net">Bersih</a></li>
+                        </ul>
+                    </div>
+                </x-slot>
+                <x-slot name="content">
+                    <div id="grossRevenueVal" class="stat-card__value">Rp{{ number_format((float) $report['gross_revenue'], 0, ',', '.') }}</div>
+                    <div id="netRevenueVal" class="stat-card__value d-none">Rp{{ number_format((float) ($report['gross_revenue'] + $report['fine_revenue']), 0, ',', '.') }}</div>
+                </x-slot>
+            </x-stat-card>
         </div>
         <div class="col-md-3">
             <x-stat-card title="Denda" :value="'Rp'.number_format((float) $report['fine_revenue'], 0, ',', '.')" tone="neutral" class="h-100" />
@@ -67,4 +97,41 @@
             </table>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownBtn = document.getElementById('revenueDropdown');
+            const dropdownItems = document.querySelectorAll('#revenueCardDropdown .dropdown-item');
+            const grossRevenueVal = document.getElementById('grossRevenueVal');
+            const netRevenueVal = document.getElementById('netRevenueVal');
+
+            if (dropdownBtn && dropdownItems.length && grossRevenueVal && netRevenueVal) {
+                dropdownItems.forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        // Remove active class from all items, add to clicked
+                        dropdownItems.forEach(i => {
+                            i.classList.remove('active');
+                            i.classList.add('text-muted');
+                        });
+                        this.classList.add('active');
+                        this.classList.remove('text-muted');
+
+                        // Update button text
+                        dropdownBtn.textContent = this.textContent.trim();
+
+                        // Toggle values
+                        const val = this.getAttribute('data-value');
+                        if (val === 'gross') {
+                            grossRevenueVal.classList.remove('d-none');
+                            netRevenueVal.classList.add('d-none');
+                        } else {
+                            grossRevenueVal.classList.add('d-none');
+                            netRevenueVal.classList.remove('d-none');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </x-dynamic-component>
