@@ -45,7 +45,7 @@
                 </x-slot>
                 <x-slot name="content">
                     <div id="grossRevenueVal" class="stat-card__value">Rp{{ number_format((float) $report['gross_revenue'], 0, ',', '.') }}</div>
-                    <div id="netRevenueVal" class="stat-card__value d-none">Rp{{ number_format((float) ($report['gross_revenue'] + $report['fine_revenue']), 0, ',', '.') }}</div>
+                    <div id="netRevenueVal" class="stat-card__value d-none">Rp{{ number_format((float) $report['net_revenue'], 0, ',', '.') }}</div>
                 </x-slot>
             </x-stat-card>
         </div>

@@ -51,7 +51,7 @@
             <div class="owner-stat-card" style="--card-accent:#580d21; --icon-bg:rgba(88,13,33,0.08); --icon-color:#580d21;">
                 <div class="stat-icon-wrap"><i class="bi bi-trophy-fill"></i></div>
                 <div class="stat-label">Total Bersih</div>
-                <div class="stat-value" style="font-size:1.15rem;">Rp{{ number_format((float)$report['gross_revenue'] + (float)$report['fine_revenue'], 0, ',', '.') }}</div>
+                <div class="stat-value" style="font-size:1.15rem;">Rp{{ number_format((float)$report['net_revenue'] + (float)$report['fine_revenue'], 0, ',', '.') }}</div>
                 <div class="stat-helper">Sewa + denda</div>
             </div>
         </div>
@@ -86,7 +86,7 @@
                                 <div style="width:10px;height:10px;border-radius:50%;background:#580d21;"></div>
                                 <span style="font-size:0.82rem;color:#79665e;">Pendapatan Sewa</span>
                             </div>
-                            <span style="font-size:0.82rem;font-weight:700;">Rp{{ number_format((float)$report['gross_revenue'], 0, ',', '.') }}</span>
+                            <span style="font-size:0.82rem;font-weight:700;">Rp{{ number_format((float)$report['net_revenue'], 0, ',', '.') }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center gap-2">
@@ -183,9 +183,9 @@
                 datasets: [{
                     label: 'Jumlah (Rp)',
                     data: [
-                        {{ (float)$report['gross_revenue'] }},
+                        {{ (float)$report['net_revenue'] }},
                         {{ (float)$report['fine_revenue'] }},
-                        {{ (float)$report['gross_revenue'] + (float)$report['fine_revenue'] }}
+                        {{ (float)$report['net_revenue'] + (float)$report['fine_revenue'] }}
                     ],
                     backgroundColor: ['rgba(88,13,33,0.75)', 'rgba(155,58,74,0.75)', 'rgba(88,13,33,0.9)'],
                     borderRadius: 8,
@@ -213,7 +213,7 @@
             data: {
                 labels: ['Pendapatan Sewa', 'Denda'],
                 datasets: [{
-                    data: [{{ (float)$report['gross_revenue'] ?: 1 }}, {{ (float)$report['fine_revenue'] ?: 0 }}],
+                    data: [{{ (float)$report['net_revenue'] ?: 1 }}, {{ (float)$report['fine_revenue'] ?: 0 }}],
                     backgroundColor: ['#580d21', '#9b3a4a'],
                     borderWidth: 0, hoverOffset: 4,
                 }]

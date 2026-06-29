@@ -108,6 +108,7 @@ class ReportService
             ->take(5);
 
         $settledRentals = $rentals->filter(fn (Rental $rental) => $rental->payment?->status === PaymentStatus::Settlement);
+        $pendingRentals = $rentals->filter(fn (Rental $rental) => $rental->payment?->status === PaymentStatus::Pending);
 
         return [
             'selected_month' => $referenceDate,
@@ -116,7 +117,8 @@ class ReportService
             'active_transactions' => $rentals->filter(fn (Rental $rental) => $rental->status === RentalStatus::Active)->count(),
             'completed_transactions' => $rentals->filter(fn (Rental $rental) => $rental->status === RentalStatus::Completed)->count(),
             'pending_transactions' => $rentals->filter(fn (Rental $rental) => $rental->status === RentalStatus::Pending)->count(),
-            'gross_revenue' => $settledRentals->sum('total_price'),
+            'gross_revenue' => $settledRentals->sum('total_price') + $pendingRentals->sum('total_price'),
+            'net_revenue' => $settledRentals->sum('total_price'),
             'fine_revenue' => $settledRentals->sum(fn (Rental $rental) => (float) ($rental->returnRecord->fine_amount ?? 0)),
             'payments_by_method' => $paymentsByMethod,
             'top_costumes' => $topCostumes,
