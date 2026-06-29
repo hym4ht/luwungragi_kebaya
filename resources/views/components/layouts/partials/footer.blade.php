@@ -1,8 +1,9 @@
 <style>
     .site-footer {
         border-top: 1px solid rgba(0,0,0,0.05);
-        padding: 2rem 0;
+        padding: 2.5rem 0 2rem 0;
         margin-top: auto;
+        overflow: hidden;
     }
     .footer-brand {
         font-family: 'Playfair Display', serif;
@@ -46,10 +47,13 @@
         color: white;
         border-color: var(--brand-maroon, #580d21);
     }
+    .footer-parallax-inner {
+        will-change: transform, opacity;
+    }
 </style>
 
-<footer class="site-footer">
-    <div class="container-fluid px-4 px-lg-5">
+<footer class="site-footer" id="site-footer">
+    <div class="container-fluid px-4 px-lg-5 footer-parallax-inner" id="footer-parallax-inner">
         <div class="row align-items-center">
             <div class="col-lg-4 mb-4 mb-lg-0 text-center text-lg-start">
                 <div class="footer-brand">Luwungragi Heritage</div>
@@ -80,3 +84,61 @@
         </div>
     </div>
 </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const footer = document.getElementById('site-footer');
+    const inner = document.getElementById('footer-parallax-inner');
+    
+    if(!footer || !inner) return;
+
+    let ticking = false;
+
+    function updateFooterParallax() {
+        const rect = footer.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        
+        // Cek apakah footer berada dalam viewport
+        if (rect.top <= windowHeight && rect.bottom >= 0) {
+            // Seberapa banyak footer yang terlihat di layar
+            const visibleHeight = windowHeight - rect.top;
+            const footerHeight = footer.offsetHeight;
+            
+            // Konversi menjadi angka progress antara 0.0 sampai 1.0
+            let progress = visibleHeight / footerHeight;
+            if (progress > 1) progress = 1;
+            if (progress < 0) progress = 0;
+            
+            // Efek parallax: saat baru muncul (progress 0) elemen digeser ke bawah 60px
+            // Saat progress mencapai 1, geser menjadi 0px
+            const maxOffset = 60;
+            const yOffset = maxOffset * (1 - progress);
+            
+            // Efek fadeIn untuk animasi yang lebih smooth
+            const opacity = 0.3 + (progress * 0.7);
+            
+            inner.style.transform = `translateY(${yOffset}px)`;
+            inner.style.opacity = opacity;
+        }
+        
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(updateFooterParallax);
+            ticking = true;
+        }
+    }, { passive: true });
+    
+    window.addEventListener('resize', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(updateFooterParallax);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    // Panggil fungsi saat pramuat
+    updateFooterParallax();
+});
+</script>
